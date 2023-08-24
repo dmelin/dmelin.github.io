@@ -17,5 +17,7 @@ body {
 
     #theclock {
         text-shadow: 0 0 40px rgba(#fff, 0.9);
+        text-transform: uppercase;
+        mix-blend-mode: hard-light;
     }
 }
