@@ -1,0 +1,21 @@
+html,
+body {
+    min-height: 100vh;
+    font-size: 20px;
+}
+
+body {
+    background: #753880;
+}
+
+#hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: radial-gradient(rgba(#fff, 0.3), transparent);
+
+    #theclock {
+        text-shadow: 0 0 40px rgba(#fff, 0.9);
+    }
+}

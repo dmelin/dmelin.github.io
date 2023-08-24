@@ -1,0 +1,25 @@
+html,
+body {
+  min-height: 100vh;
+  font-size: 20px;
+}
+
+body {
+  background: #753880;
+}
+
+#hero {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  background: radial-gradient(rgba(255, 255, 255, 0.3), transparent);
+}
+#hero #theclock {
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.9);
+}
