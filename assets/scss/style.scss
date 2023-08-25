@@ -8,6 +8,34 @@ body {
 
 body {
     overflow-x: hidden;
+
+    .distancelist {
+        position: fixed;
+        display: flex;
+        flex-direction: column-reverse;
+        justify-content: space-between;
+        right: 10px;
+        top: 40px;
+        bottom: 10px;
+        z-index: 200;
+
+        .distance {
+            font-size: 11px;
+            text-transform: capitalize;
+            cursor: pointer;
+            text-align: right;
+
+            &:after {
+                content: " AU";
+            }
+
+            &:hover {
+                text-decoration: underline;
+                text-decoration-color: #fc0;
+            }
+        }
+    }
+
 }
 
 #hero {
@@ -34,16 +62,17 @@ body {
 
 #planets {
     position: relative;
+    width: 100vw;
 
     section {
         position: absolute;
         height: 100vh;
-        width: 100vw;
+        width: 100%;
 
         background: rgba(#000, 0.1);
 
         box-sizing: border-box;
-        padding: 20px;
+        padding: 20px 120px 20px 20px;
 
         h2 {
             display: flex;
@@ -81,5 +110,10 @@ body {
                 }
             }
         }
+
+        .planetname {
+            text-transform: capitalize;
+        }
+
     }
 }
