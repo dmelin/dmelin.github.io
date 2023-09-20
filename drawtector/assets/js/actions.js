@@ -227,9 +227,9 @@ $(document).ready(function () {
         }
 
         if (theWord == "random") {
-            theWord = randomWords[Math.floor(Math.random() * randomWords.length)]
+            theWord = items[Math.floor(Math.random() * items.length)]
         }
-        var theCategory = items[Math.floor(Math.random() * items.length)]
+        var theCategory = randomWords[Math.floor(Math.random() * randomWords.length)]
 
         setTimeout(function (e) {
             $("#theResult").html(theCategory + " " + theWord)
