@@ -1,6 +1,7 @@
 #theResult,
-#theMethod {
-    transition: all 0.5s;
+#theMethod,
+#theClock {
+    transition: opacity 0.5s, background-color 0.5s;
     text-transform: uppercase;
 
     &.gone {
@@ -18,4 +19,14 @@
             content: "!!";
         }
     }
+}
+
+#theClock {
+    display: flex !important;
+    margin: 0 auto !important;
+    width: 100px;
+    height: 100px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
 }

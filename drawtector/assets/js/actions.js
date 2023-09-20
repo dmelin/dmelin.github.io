@@ -223,6 +223,9 @@ const pencilIn = [
     "fist, up side down"
 ]
 
+var maxTime = 120
+var time = maxTime
+
 $(document).ready(function () {
     $("#goCrazy").click(function (e) {
         $(this).toggleClass("yes")
@@ -232,8 +235,10 @@ $(document).ready(function () {
         $("#theButton").click()
     })
     $("#theButton").click(function (e) {
+        time = maxTime
         $("#theResult").addClass("gone")
         $("#theMethod").addClass("gone")
+        $("#theClock").addClass("gone")
 
         var theWord = $("#theWord").val()
 
@@ -252,14 +257,34 @@ $(document).ready(function () {
         setTimeout(function (e) {
             $("#theResult").html(theCategory + " " + theWord)
             $("#theResult").removeClass("gone")
+            $("#theClock").removeClass("gone")
 
             if ($("#goCrazy").hasClass("yes")) {
                 setTimeout(function (e) {
                     $("#theMethod").html("using your " + theMethod)
                     $("#theMethod").removeClass("gone")
+                    $("#theClock").removeClass("gone")
                 }, 500)
             }
 
         }, 600)
     })
+
+    setInterval(function (e) {
+        time = time - 1
+
+        if (time < 0) time = 0
+
+        var theClass = "alert-success"
+
+        if ((maxTime - time) / maxTime < 0.75) theClass = "alert-warning"
+        if ((maxTime - time) / maxTime < 0.33) theClass = "alert-danger"
+
+        $("#theClock").removeClass("alert-success")
+        $("#theClock").removeClass("alert-warning")
+
+        $("#theClock").addClass(theClass)
+
+        $("#theClock").html(time)
+    }, 1000)
 })
