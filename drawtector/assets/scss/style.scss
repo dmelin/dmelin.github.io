@@ -1,0 +1,8 @@
+#theResult {
+    transition: all 0.5s;
+    text-transform: uppercase;
+
+    &.gone {
+        opacity: 0;
+    }
+}
