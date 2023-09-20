@@ -215,10 +215,26 @@ const items = [
     "arse",
     "vagina"
 ];
+const pencilIn = [
+    "usual hand",
+    "wrong hand",
+    "mouth",
+    "fist",
+    "fist, up side down"
+]
 
 $(document).ready(function () {
+    $("#goCrazy").click(function (e) {
+        $(this).toggleClass("yes")
+        $(this).toggleClass("btn-success")
+        $(this).toggleClass("btn-light")
+
+        $("#theButton").click()
+    })
     $("#theButton").click(function (e) {
         $("#theResult").addClass("gone")
+        $("#theMethod").addClass("gone")
+
         var theWord = $("#theWord").val()
 
         if (theWord === "") {
@@ -231,9 +247,19 @@ $(document).ready(function () {
         }
         var theCategory = randomWords[Math.floor(Math.random() * randomWords.length)]
 
+        var theMethod = ($("#goCrazy").hasClass("yes")) ? pencilIn[Math.floor(Math.random() * pencilIn.length)] : pencilIn[0]
+
         setTimeout(function (e) {
             $("#theResult").html(theCategory + " " + theWord)
             $("#theResult").removeClass("gone")
+
+            if ($("#goCrazy").hasClass("yes")) {
+                setTimeout(function (e) {
+                    $("#theMethod").html("using your " + theMethod)
+                    $("#theMethod").removeClass("gone")
+                }, 500)
+            }
+
         }, 600)
     })
 })

@@ -1,8 +1,21 @@
-#theResult {
+#theResult,
+#theMethod {
     transition: all 0.5s;
     text-transform: uppercase;
 
     &.gone {
         opacity: 0;
+    }
+}
+
+#goCrazy {
+    &:after {
+        content: "?";
+    }
+
+    &.yes {
+        &:after {
+            content: "!!";
+        }
     }
 }
