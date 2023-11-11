@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" class="sl-theme-dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMIcons</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/themes/dark.css" />
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.11.2/cdn/shoelace-autoloader.js"></script>
+</head>
+
+<body>
+    <sl-dialog label="Dialog" class="dialog-overview">
+        <sl-textarea autofocus resize="none"></sl-textarea>
+        <sl-button slot="footer" variant="secondary">Copy</sl-button>
+        <sl-button slot="footer" variant="primary">Close</sl-button>
+    </sl-dialog>
+
+    <header>
+        <h1>DM-Icons</h1>
+        <tools>
+            <div class="search">
+                <sl-icon name="search-heart"></sl-icon>
+                <sl-input size="large" id="search"></sl-input>
+
+            </div>
+            <div class="color-picker color-bg">
+                <sl-color-picker id="cp-background" opacity label="Select background" value="#000" swatches="
+                #d0021b; #f5a623; #f8e71c; #8b572a; #7ed321; #417505; #bd10e0; #9013fe;
+                #4a90e2; #50e3c2; #b8e986; #000; #444; #888; #ccc; #fff;
+              "></sl-color-picker>
+                <p>Background</p>
+            </div>
+            <div class="color-picker color-fg">
+                <sl-color-picker id="cp-background" opacity label="Select background" value="#fff" swatches="
+                            #d0021b; #f5a623; #f8e71c; #8b572a; #7ed321; #417505; #bd10e0; #9013fe;
+                            #4a90e2; #50e3c2; #b8e986; #000; #444; #888; #ccc; #fff;
+                          "></sl-color-picker>
+                <p>Foreground</p>
+            </div>
+
+        </tools>
+    </header>
+    <div class="icon-content">
+        <icon data-name="heart" data-search="heart love">
+            <dm-icon icon-heart></dm-icon>
+        </icon>
+        <icon data-name="info" data-search="info information">
+            <dm-icon icon-info></dm-icon>
+        </icon>
+        <icon data-name="face-happy" data-search="face happy smiley">
+            <dm-icon icon-face-happy></dm-icon>
+        </icon>
+        <icon data-name="headset" data-search="headset">
+            <dm-icon icon-headset></dm-icon>
+        </icon>
+        <icon data-name="starfield" data-search="game starfield">
+            <dm-icon icon-starfield></dm-icon>
+        </icon>
+
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dmelin/icons/assets/css/dmicons.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/dmelin/icons/assets/js/dmicons.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="assets/js/actions.js"></script>
+</body>
+
+</html>
