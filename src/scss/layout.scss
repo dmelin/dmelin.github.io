@@ -1,3 +1,6 @@
+* {
+    transition: all 0.5s;
+}
 html {
 	font-size: 10px;
 	height: 100vh;
@@ -9,7 +12,7 @@ body {
 	color: $primary-color;
 
 	display: grid;
-	grid-template-columns: auto 1fr;
+	grid-template-columns: 300px 1fr;
 	grid-template-rows: auto 1fr auto;
 	grid-template-areas:
 		"header header"
@@ -21,14 +24,79 @@ body {
 
 	header {
 		grid-area: header;
+        padding: 0.5rem;
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: normal;
+        }
 	}
 
 	menu {
 		grid-area: menu;
+        margin: 0;
+        padding: 0;
+        background: #eee;
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column-reverse;
+
+            li {
+                margin: 0;
+                padding: 0;
+
+                a {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 0.5rem;
+                    text-decoration: none;
+                    color: $primary-color;
+                    text-transform: capitalize;
+
+                    &.active {
+                        background: $primary-color;
+                        color: #fff;
+                    }
+
+                    .title {
+                        font-weight: bold;
+                    }
+                    .date {
+                        font-size: 0.8rem;
+                    }
+                }
+            }
+        }
 	}
 
 	main {
 		grid-area: main;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        #post-content {
+            padding: 0.5rem;
+            width: 500px;
+            margin: 0 auto;
+
+            post-title, post-category {
+                display: none;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+                font-weight: normal;
+                margin: 0 0 0.5rem 0;
+                padding: 0 0 0.5rem 0;
+                border-bottom: 1px solid $secondary-color;
+            }
+        }
 	}
 
 	footer {
