@@ -1,75 +1,62 @@
+const gitURL = "https://api.github.com/repos/dmelin/dmelin.github.io/contents/posts";
+
 $(document).ready(function () {
-	const postsDirectory = "posts/";
-    var myPosts;
-
-    const url = decodeURI(window.location.href.split("?")[1]);
-    
-	// Function to load and display post list
-	function loadPostList() {
-		$.ajax({
-			url: "https://api.github.com/repos/dmelin/dmelin.github.io/contents/posts",
-			method: "GET",
-            success: function (posts) {
-                myPosts = posts;
-				const postList = $("#post-list");
-				postList.empty();
-
-                myPosts.forEach(function (post, key) {
-					if (post.name.endsWith(".html")) {
-						const fileName = post.name;
-						const postDate = fileName.substring(0, 10);
-						const postTitle = fileName.substring(11, fileName.length - 5).replace(/-/g, " ");
-
-						const listItem = $("<li>").append(
-							$("<a>")
-                                .attr("href", "#" + fileName)
-                                .attr("post-id", key)
-								.text(postTitle + " (" + postDate + ")")
-						);
-
-						postList.append(listItem);
-					}
-				});
-
-				// Load the first post by default
-                if (myPosts.length > 0 && url == "undefined") {
-                    loadPost(0);
-                } else if (url != "undefined") {
-                    myPosts.forEach(function (post, key) {
-                        console.log(post.name, url);
-                        if (post.name == `${url}.html`) {
-                            loadPost(key);
-                            return;
-                        }
-                    });
-                }
-			},
+	getPosts()
+        .then((posts) => {
+            console.log(posts);
+            posts.posts.forEach((post, key) => {
+                const title = post.name.replace(".html", "").split("-").slice(3);
+                $("#post-list").append(`
+                    <li>
+                        <a href="#" data-post="${key}">
+                            <span class="title">${title}</span>
+                        </a>
+                    </li>
+                `);
+            })
+		})
+		.catch((error) => {
+			console.log("error", error);
 		});
-	}
-
-	// Function to load and display a post
-    function loadPost(postId) {
-        const targetURL = myPosts[postId].download_url + "?random=" + Math.random();
-        console.info(`Loading post from ${targetURL}`);
-		$.ajax({
-			url: targetURL,
-            method: "GET",
-            cache: false,
-            success: function (content) {
-                console.info('Post loaded', content);
-                const $postContent = $(content);
-                const $container = $("<div>").html($postContent);
-                console.log($container.find("post-title").length);
-			},
-		});
-	}
-
-	// Handle clicks on post links
-	$("#post-list").on("click", "a", function (e) {
-		e.preventDefault();
-		loadPost($(this).attr("post-id"));
-	});
-
-	// Initial load of post list
-	loadPostList();
 });
+
+function getPosts() {
+	const postData = sessionStorage.getItem("posts");
+    if (postData) {
+        const posts = JSON.parse(postData);
+        console.log("Loaded posts from cache");
+
+        if (Date.now() / 1000 - posts.expires <= 0) {
+            return new Promise((resolve, reject) => {
+                resolve(resolve(posts));
+            });
+        } else {
+
+        }
+    }
+
+    return new Promise((resolve, reject) => {
+        console.log("Loading posts from GitHub", gitURL);
+        $.ajax({
+            url: gitURL,
+            success: function (data) {
+                storePosts(data);
+                resolve(data);
+            },
+            error: function (error) {
+                storePosts(error);
+                reject(error);
+            },
+        });
+    });
+}
+
+function storePosts(posts) {
+	sessionStorage.setItem(
+		"posts",
+		JSON.stringify({
+			expires: Date.now() / 1000 + 10000,
+			posts: posts,
+		})
+	);
+}

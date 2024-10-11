@@ -1,42 +1,38 @@
+html {
+	font-size: 10px;
+	height: 100vh;
+}
 body {
-    font-family: $font-stack;
-    font-size: $font-size;
-    line-height: 1.6;
-    color: $primary-color;
-    margin: 0 auto;
-    padding: 0;
-}
+	font-family: $font-stack;
+	font-size: $font-size;
+	line-height: 1.6;
+	color: $primary-color;
 
-header {
-    position: sticky;
-    left: 0;
-    top: 0;
-    right: 0;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-template-rows: auto 1fr auto;
+	grid-template-areas:
+		"header header"
+		"menu main"
+		"footer footer";
+	height: 100vh;
+	margin: 0;
+	padding: 0;
 
-    margin: 0 0 2rem 0;
-    
-    h1 {
-        font-size: 1.2rem;
-        margin: 0;
-        font-weight: normal;
+	header {
+		grid-area: header;
+	}
+
+	menu {
+		grid-area: menu;
+	}
+
+	main {
+		grid-area: main;
+	}
+
+	footer {
+		grid-area: footer;
         color: $secondary-color;
-    }
-}
-
-#post-list {
-    list-style: none;
-    padding: 0;
-    
-    li {
-        margin-bottom: 0.5rem;
-    }
-    
-    a {
-        color: $secondary-color;
-        text-decoration: none;
-        
-        &:hover {
-            text-decoration: underline;
-        }
-    }
+	}
 }
