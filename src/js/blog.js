@@ -96,12 +96,14 @@ function getPost(id) {
     $.ajax({
         url: postUrl,
         success: function (data) {
-            var postContent = $(data);
+            var postContent = $("<div>").html(data);
             var postMeta = $("<div>");
-            postMeta.addClass("meta")
-                .append(postContent.find("time"))
+            postMeta.addClass("meta").append(postContent.find("post-time")).append(postContent.find("post-category"));
             
-            postContent.find("h2").after(postMeta);
+            var postTitle = $("<h2>").text(postContent.find("post-title").text());
+
+            postContent.find("article").prepend(postTitle);
+            postContent.find("article").prepend(postMeta);
             $("#post-content").html(postContent);
         },
         error: function (error) {

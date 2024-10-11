@@ -85,12 +85,21 @@ body {
             width: 500px;
             margin: 0 auto;
 
-            post-title, post-category {
+            post-title {
                 display: none;
             }
 
+            .meta {
+                display: flex;
+                justify-content: space-between;
+                text-transform: uppercase;
+
+                post-time, post-category {
+                    color: $light-color;
+                }
+            }
             h2 {
-                font-size: 1.8rem;
+                font-size: 2.4rem;
                 font-weight: normal;
                 margin: 0 0 0.5rem 0;
                 padding: 0 0 0.5rem 0;
