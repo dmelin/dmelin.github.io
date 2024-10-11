@@ -44,9 +44,9 @@ $(document).ready(function () {
 			url: targetURL,
 			method: "GET",
             success: function (content) {
-                const postContent = jQuery(content);
-                console.log(postContent.find("title").text());
-				$("#post-content").html(postContent);
+                console.info('Post loaded', content);
+                const postContent = $(content);
+                console.log(postContent.find("title").length);
 			},
 		});
 	}
