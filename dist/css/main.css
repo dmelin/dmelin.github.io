@@ -99,6 +99,8 @@ body main #post-content content {
 }
 body main #post-content content pre {
   white-space: pre-wrap;
+  font-family: "Arial", sans-serif;
+  font-size: inherit;
 }
 body footer {
   grid-area: footer;

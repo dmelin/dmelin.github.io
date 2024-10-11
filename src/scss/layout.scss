@@ -112,6 +112,8 @@ body {
 
                 pre {
                     white-space: pre-wrap;
+                    font-family: $font-stack;
+                    font-size: inherit;
                 }
             }
         }
