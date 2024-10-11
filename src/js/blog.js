@@ -45,7 +45,7 @@ $(document).ready(function () {
 			method: "GET",
             success: function (content) {
                 const postContent = jQuery(content);
-                console.log(postContent);
+                console.log(postContent.find("title").text());
 				$("#post-content").html(postContent);
 			},
 		});
