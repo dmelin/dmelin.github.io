@@ -1,1 +1,38 @@
-body{font-family:"Arial",sans-serif;line-height:1.6;color:#333;max-width:800px;margin:0 auto;padding:1rem}header{margin-bottom:2rem}header h1{font-size:2rem;margin-bottom:1rem}#post-list{list-style:none;padding:0}#post-list li{margin-bottom:.5rem}#post-list a{color:#666;text-decoration:none}#post-list a:hover{text-decoration:underline}/*# sourceMappingURL=main.css.map */
+body {
+  font-family: "Arial", sans-serif;
+  line-height: 1.6;
+  color: #333;
+  margin: 0 auto;
+  padding: 0;
+}
+
+header {
+  background: #f4f4f4;
+  border-bottom: 1px solid #ccc;
+  position: sticky;
+  left: 0;
+  top: 0;
+  right: 0;
+  margin: 0 0 2rem 0;
+}
+header h1 {
+  font-size: 2rem;
+  margin: 0;
+}
+
+#post-list {
+  list-style: none;
+  padding: 0;
+}
+#post-list li {
+  margin-bottom: 0.5rem;
+}
+#post-list a {
+  color: #666;
+  text-decoration: none;
+}
+#post-list a:hover {
+  text-decoration: underline;
+}
+
+/*# sourceMappingURL=main.css.map */

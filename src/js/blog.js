@@ -1,16 +1,18 @@
 $(document).ready(function () {
 	const postsDirectory = "posts/";
+    var myPosts;
 
 	// Function to load and display post list
 	function loadPostList() {
 		$.ajax({
-			url: "https://api.github.com/repos/dmelin/dmelin.se.github.io/contents/posts",
+			url: "https://api.github.com/repos/dmelin/dmelin.github.io/contents/posts",
 			method: "GET",
-			success: function (posts) {
+            success: function (posts) {
+                myPosts = posts;
 				const postList = $("#post-list");
 				postList.empty();
 
-				posts.forEach(function (post) {
+                myPosts.forEach(function (post, key) {
 					if (post.name.endsWith(".html")) {
 						const fileName = post.name;
 						const postDate = fileName.substring(0, 10);
@@ -18,7 +20,8 @@ $(document).ready(function () {
 
 						const listItem = $("<li>").append(
 							$("<a>")
-								.attr("href", "#" + fileName)
+                                .attr("href", "#" + fileName)
+                                .attr("post-id", key)
 								.text(postTitle + " (" + postDate + ")")
 						);
 
@@ -27,20 +30,23 @@ $(document).ready(function () {
 				});
 
 				// Load the first post by default
-				if (posts.length > 0) {
-					loadPost(posts[0].name);
+				if (myPosts.length > 0) {
+					loadPost(0);
 				}
 			},
 		});
 	}
 
 	// Function to load and display a post
-	function loadPost(fileName) {
+    function loadPost(postId) {
+        const targetURL = myPosts[postId].download_url;
 		$.ajax({
-			url: postsDirectory + fileName,
+			url: targetURL,
 			method: "GET",
-			success: function (content) {
-				$("#post-content").html(content);
+            success: function (content) {
+                const postContent = jQuery(content);
+                console.log(postContent);
+				$("#post-content").html(postContent);
 			},
 		});
 	}
@@ -48,8 +54,7 @@ $(document).ready(function () {
 	// Handle clicks on post links
 	$("#post-list").on("click", "a", function (e) {
 		e.preventDefault();
-		const fileName = $(this).attr("href").substring(1);
-		loadPost(fileName);
+		loadPost($(this).attr("post-id"));
 	});
 
 	// Initial load of post list
