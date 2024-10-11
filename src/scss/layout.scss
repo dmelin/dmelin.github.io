@@ -38,6 +38,7 @@ body {
         margin: 0;
         padding: 0;
         border-right: 1px dotted $secondary-color;
+        font-size: 1.4rem;
 
         ul {
             margin: 0;
@@ -63,10 +64,11 @@ body {
                     }
 
                     .title {
-                        font-weight: bold;
+                        color: $primary-color;
                     }
                     .date {
-                        font-size: 0.8rem;
+                        font-size: 1.2rem;
+                        color: $secondary-color;
                     }
                 }
             }
@@ -107,6 +109,10 @@ body {
 
             content {
                 font-size: 1.6rem;
+
+                pre {
+                    white-space: pre-wrap;
+                }
             }
         }
 	}

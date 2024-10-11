@@ -34,6 +34,7 @@ body menu {
   margin: 0;
   padding: 0;
   border-right: 1px dotted rgba(0, 0, 0, 0.6);
+  font-size: 1.4rem;
 }
 body menu ul {
   margin: 0;
@@ -58,10 +59,11 @@ body menu ul li a.active {
   padding-left: 2rem;
 }
 body menu ul li a .title {
-  font-weight: bold;
+  color: rgba(0, 0, 0, 0.9);
 }
 body menu ul li a .date {
-  font-size: 0.8rem;
+  font-size: 1.2rem;
+  color: rgba(0, 0, 0, 0.6);
 }
 body main {
   grid-area: main;
@@ -94,6 +96,9 @@ body main #post-content h2 {
 }
 body main #post-content content {
   font-size: 1.6rem;
+}
+body main #post-content content pre {
+  white-space: pre-wrap;
 }
 body footer {
   grid-area: footer;

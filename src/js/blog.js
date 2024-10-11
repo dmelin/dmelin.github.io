@@ -105,6 +105,7 @@ function getPost(id) {
             postContent.find("article").prepend(postTitle);
             postContent.find("article").prepend(postMeta);
             $("#post-content").html(postContent);
+            Prism.highlightAll();
         },
         error: function (error) {
             console.log("error", error);
