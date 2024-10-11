@@ -33,7 +33,7 @@ body menu {
   grid-area: menu;
   margin: 0;
   padding: 0;
-  background: #eee;
+  border-right: 1px dotted rgba(0, 0, 0, 0.6);
 }
 body menu ul {
   margin: 0;
@@ -55,8 +55,7 @@ body menu ul li a {
   text-transform: capitalize;
 }
 body menu ul li a.active {
-  background: rgba(0, 0, 0, 0.9);
-  color: #fff;
+  padding-left: 2rem;
 }
 body menu ul li a .title {
   font-weight: bold;
@@ -92,6 +91,9 @@ body main #post-content h2 {
   margin: 0 0 0.5rem 0;
   padding: 0 0 0.5rem 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+}
+body main #post-content content {
+  font-size: 1.6rem;
 }
 body footer {
   grid-area: footer;

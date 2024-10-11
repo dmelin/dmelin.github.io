@@ -37,7 +37,7 @@ body {
 		grid-area: menu;
         margin: 0;
         padding: 0;
-        background: #eee;
+        border-right: 1px dotted $secondary-color;
 
         ul {
             margin: 0;
@@ -59,8 +59,7 @@ body {
                     text-transform: capitalize;
 
                     &.active {
-                        background: $primary-color;
-                        color: #fff;
+                        padding-left: 2rem;
                     }
 
                     .title {
@@ -104,6 +103,10 @@ body {
                 margin: 0 0 0.5rem 0;
                 padding: 0 0 0.5rem 0;
                 border-bottom: 1px solid $secondary-color;
+            }
+
+            content {
+                font-size: 1.6rem;
             }
         }
 	}
