@@ -1,5 +1,6 @@
 body {
     font-family: $font-stack;
+    font-size: $font-size;
     line-height: 1.6;
     color: $primary-color;
     margin: 0 auto;
@@ -7,8 +8,6 @@ body {
 }
 
 header {
-    background: #f4f4f4;
-    border-bottom: 1px solid #ccc;
     position: sticky;
     left: 0;
     top: 0;
@@ -17,8 +16,10 @@ header {
     margin: 0 0 2rem 0;
     
     h1 {
-        font-size: 2rem;
+        font-size: 1.2rem;
         margin: 0;
+        font-weight: normal;
+        color: $secondary-color;
     }
 }
 

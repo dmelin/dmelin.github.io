@@ -2,6 +2,8 @@ $(document).ready(function () {
 	const postsDirectory = "posts/";
     var myPosts;
 
+    const url = decodeURI(window.location.href.split("?")[1]);
+    
 	// Function to load and display post list
 	function loadPostList() {
 		$.ajax({
@@ -30,23 +32,34 @@ $(document).ready(function () {
 				});
 
 				// Load the first post by default
-				if (myPosts.length > 0) {
-					loadPost(0);
-				}
+                if (myPosts.length > 0 && url == "undefined") {
+                    loadPost(0);
+                } else if (url != "undefined") {
+                    myPosts.forEach(function (post, key) {
+                        console.log(post.name, url);
+                        if (post.name == `${url}.html`) {
+                            loadPost(key);
+                            return;
+                        }
+                    });
+                }
 			},
 		});
 	}
 
 	// Function to load and display a post
     function loadPost(postId) {
-        const targetURL = myPosts[postId].download_url;
+        const targetURL = myPosts[postId].download_url + "?random=" + Math.random();
+        console.info(`Loading post from ${targetURL}`);
 		$.ajax({
 			url: targetURL,
-			method: "GET",
+            method: "GET",
+            cache: false,
             success: function (content) {
                 console.info('Post loaded', content);
-                const postContent = $(content);
-                console.log(postContent.find("title").length);
+                const $postContent = $(content);
+                const $container = $("<div>").html($postContent);
+                console.log($container.find("post-title").length);
 			},
 		});
 	}
