@@ -117,6 +117,60 @@ body main #post-content content p {
   font-family: "Arial", sans-serif;
   font-size: inherit;
 }
+body main #post-content content p a {
+  color: #069;
+  text-decoration: none;
+}
+body main #post-content content p a:hover {
+  text-decoration: underline;
+}
+body main #post-content content figure {
+  margin: 0 auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  border-radius: 5px;
+  background: #f4f4f4;
+  cursor: pointer;
+}
+body main #post-content content figure:hover {
+  background: #e4e4e4;
+}
+body main #post-content content figure img {
+  margin: 0 auto;
+  display: block;
+  max-height: 350px;
+  max-width: 100%;
+}
+body main #post-content content figure figcaption {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  padding-top: 0.5rem;
+  text-align: center;
+}
+body main #post-content content figure.opened {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+body main #post-content content figure.opened img {
+  max-height: calc(100vh - 72px);
+  max-width: calc(100vw - 30px);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+}
+body main #post-content content figure.opened figcaption {
+  opacity: 0.5;
+}
 body footer {
   grid-area: footer;
   color: rgba(0, 0, 0, 0.6);

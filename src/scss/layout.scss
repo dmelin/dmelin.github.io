@@ -129,10 +129,72 @@ body {
                 p {
                     font-family: $font-stack;
                     font-size: inherit;
+
+                    a {
+                        color: #069;
+                        text-decoration: none;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
                 }
 
                 .code-container {
 
+                }
+
+                figure {
+                    margin: 0 auto;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                    padding: 1rem;
+                    border-radius: 5px;
+                    background: #f4f4f4;
+                    cursor: pointer;
+
+                    &:hover {
+                        background: #e4e4e4;
+                    }
+
+                    img {
+                        margin: 0 auto;
+                        display: block;
+                        max-height: 350px;
+                        max-width: 100%;
+                    }
+                    figcaption {
+                        font-size: 1.2rem;
+                        text-transform: uppercase;
+                        padding-top: 0.5rem;
+                        text-align: center;
+                    }
+
+                    &.opened {
+                        position: fixed;
+                        left: 0;
+                        top: 0;
+                        right: 0;
+                        bottom: 0;
+                        z-index: 1000;
+                        background: rgba(#000, 0.6);
+                        backdrop-filter: blur(5px);
+                        color: #fff;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+
+                        img {
+                            max-height: calc(100vh - 72px);
+                            max-width: calc(100vw - 30px);
+                            box-shadow: 0 0 15px rgba(#000, 0.4);
+                        }
+
+                        figcaption {
+                            opacity: 0.5;
+                        }
+                    }
                 }
             }
         }

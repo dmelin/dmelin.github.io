@@ -109,6 +109,11 @@ function getPost(id) {
             postContent.find("article").prepend(postMeta);
             $("#post-content").html(postContent);
             Prism.highlightAll();
+
+            const figures = postContent.find("figure");
+            figures.click(function () {
+                $(this).toggleClass("opened")
+            })
         },
         error: function (error) {
             console.log("error", error);
@@ -137,3 +142,9 @@ window.onpopstate = function (event) {
 		getPost(postId);
 	}
 };
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        $(".opened").removeClass("opened");
+	}
+});
