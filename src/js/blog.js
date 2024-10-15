@@ -8,7 +8,9 @@ $(document).ready(function () {
         .then((posts) => {
             myPosts = posts;
             myPosts.forEach((post, key) => {
-                if (post.name == "template.html") return;
+                if (post.name == "template.html") {
+                    return;
+                }
                 const postMeta = post.name.replace(".html", "").split("-");
                 const title = postMeta.slice(3);
                 const date = postMeta.slice(0, 3).join("-");
@@ -41,7 +43,7 @@ $(document).ready(function () {
             if (requestedPost !== undefined) {
                 getPost(requestedPost);
             } else {
-                getPost(myPosts.length - 1);
+                getPost($("#post-list").find("a:last").attr("post-id"));
             };
         })
 		.catch((error) => {
