@@ -89,7 +89,7 @@ body {
 	main {
 		grid-area: main;
         display: flex;
-        align-items: center;
+
         justify-content: center;
 
         #post-content {
@@ -100,6 +100,7 @@ body {
 
             @media screen and (max-width: 1000px) {
                 width: 100%;
+                max-width: 500px;
             }
             post-title {
                 display: none;
@@ -126,13 +127,12 @@ body {
                 font-size: 1.6rem;
 
                 p {
-                    white-space: pre-wrap;
                     font-family: $font-stack;
                     font-size: inherit;
                 }
 
                 .code-container {
-                    
+
                 }
             }
         }

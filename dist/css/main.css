@@ -78,7 +78,6 @@ body menu ul li a .date {
 body main {
   grid-area: main;
   display: flex;
-  align-items: center;
   justify-content: center;
 }
 body main #post-content {
@@ -90,6 +89,7 @@ body main #post-content {
 @media screen and (max-width: 1000px) {
   body main #post-content {
     width: 100%;
+    max-width: 500px;
   }
 }
 body main #post-content post-title {
@@ -114,7 +114,6 @@ body main #post-content content {
   font-size: 1.6rem;
 }
 body main #post-content content p {
-  white-space: pre-wrap;
   font-family: "Arial", sans-serif;
   font-size: inherit;
 }

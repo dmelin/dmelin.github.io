@@ -8,6 +8,7 @@ $(document).ready(function () {
         .then((posts) => {
             myPosts = posts;
             myPosts.forEach((post, key) => {
+                if (post.name == "template.html") return;
                 const postMeta = post.name.replace(".html", "").split("-");
                 const title = postMeta.slice(3);
                 const date = postMeta.slice(0, 3).join("-");
