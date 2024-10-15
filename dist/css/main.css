@@ -113,7 +113,7 @@ body main #post-content h2 {
 body main #post-content content {
   font-size: 1.6rem;
 }
-body main #post-content content p > pre {
+body main #post-content content p {
   white-space: pre-wrap;
   font-family: "Arial", sans-serif;
   font-size: inherit;

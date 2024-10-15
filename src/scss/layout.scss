@@ -125,10 +125,14 @@ body {
             content {
                 font-size: 1.6rem;
 
-                p > pre {
+                p {
                     white-space: pre-wrap;
                     font-family: $font-stack;
                     font-size: inherit;
+                }
+
+                .code-container {
+                    
                 }
             }
         }
