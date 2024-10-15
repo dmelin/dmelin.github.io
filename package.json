@@ -1,24 +1,25 @@
 {
-  "name": "github-pages-blog",
-  "version": "1.0.0",
-  "description": "My GitHub Pages blog",
-  "scripts": {
-    "sass:watch": "sass --watch src/scss/main.scss:dist/css/main.css",
-    "sass:build": "sass src/scss/main.scss:dist/css/main.css --style compressed"
-  },
-  "devDependencies": {
-    "sass": "^1.69.5"
-  },
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dmelin/dmelin.github.io.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/dmelin/dmelin.github.io/issues"
-  },
-  "homepage": "https://github.com/dmelin/dmelin.github.io#readme"
+	"name": "github-pages-blog",
+	"version": "1.0.0",
+	"description": "My GitHub Pages blog",
+	"scripts": {
+		"sass:watch": "sass --watch src/scss/main.scss:dist/css/main.css",
+		"sass:build": "sass src/scss/main.scss:dist/css/main.css --style compressed",
+		"post:new": "cp posts/template.html posts/new.html"
+	},
+	"devDependencies": {
+		"sass": "^1.69.5"
+	},
+	"main": "index.js",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/dmelin/dmelin.github.io.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/dmelin/dmelin.github.io/issues"
+	},
+	"homepage": "https://github.com/dmelin/dmelin.github.io#readme"
 }
