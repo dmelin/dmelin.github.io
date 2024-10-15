@@ -6,7 +6,7 @@ var requestedPost = location.href.split("?post=")[1];
 $(document).ready(function () {
     getPosts()
         .then((posts) => {
-            myPosts = posts.posts;
+            myPosts = posts;
             myPosts.forEach((post, key) => {
                 const postMeta = post.name.replace(".html", "").split("-");
                 const title = postMeta.slice(3);
@@ -56,7 +56,8 @@ function getPosts() {
         let expired = posts.expires - Date.now() / 1000;
         if (expired >= 1000) {
             return new Promise((resolve, reject) => {
-                resolve(posts);
+                console.log("loaded from cache")
+                resolve(posts.posts);
             });
         } else {
 
@@ -72,7 +73,6 @@ function getPosts() {
                 resolve(data);
             },
             error: function (error) {
-                storePosts(error);
                 reject(error);
             },
         });

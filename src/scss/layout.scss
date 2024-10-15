@@ -18,6 +18,14 @@ body {
 		"header header"
 		"menu main"
 		"footer footer";
+
+    @media screen and (max-width: 1000px) {
+        grid-template-areas:
+            "header menu"
+            "main main"
+            "footer footer";
+    }
+
 	height: 100vh;
 	margin: 0;
 	padding: 0;
@@ -40,6 +48,9 @@ body {
         border-right: 1px dotted $secondary-color;
         font-size: 1.4rem;
 
+        @media screen and (max-width: 1000px) {
+            display: none;
+        }
         ul {
             margin: 0;
             padding: 0;
@@ -84,8 +95,12 @@ body {
         #post-content {
             padding: 0.5rem;
             width: 500px;
+            box-sizing: border-box;
             margin: 0 auto;
 
+            @media screen and (max-width: 1000px) {
+                width: 100%;
+            }
             post-title {
                 display: none;
             }
@@ -110,7 +125,7 @@ body {
             content {
                 font-size: 1.6rem;
 
-                pre {
+                p > pre {
                     white-space: pre-wrap;
                     font-family: $font-stack;
                     font-size: inherit;

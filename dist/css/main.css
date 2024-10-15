@@ -20,6 +20,11 @@ body {
   margin: 0;
   padding: 0;
 }
+@media screen and (max-width: 1000px) {
+  body {
+    grid-template-areas: "header menu" "main main" "footer footer";
+  }
+}
 body header {
   grid-area: header;
   padding: 0.5rem;
@@ -35,6 +40,11 @@ body menu {
   padding: 0;
   border-right: 1px dotted rgba(0, 0, 0, 0.6);
   font-size: 1.4rem;
+}
+@media screen and (max-width: 1000px) {
+  body menu {
+    display: none;
+  }
 }
 body menu ul {
   margin: 0;
@@ -74,7 +84,13 @@ body main {
 body main #post-content {
   padding: 0.5rem;
   width: 500px;
+  box-sizing: border-box;
   margin: 0 auto;
+}
+@media screen and (max-width: 1000px) {
+  body main #post-content {
+    width: 100%;
+  }
 }
 body main #post-content post-title {
   display: none;
@@ -97,7 +113,7 @@ body main #post-content h2 {
 body main #post-content content {
   font-size: 1.6rem;
 }
-body main #post-content content pre {
+body main #post-content content p > pre {
   white-space: pre-wrap;
   font-family: "Arial", sans-serif;
   font-size: inherit;
