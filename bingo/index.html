@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="bingo.css">
+</head>
+
+<body>
+
+    <div id="spelplan">
+        <div id="vinster">
+            <p id="lottnummer">Lottnummer: <span></span></p>
+            <img src="bild1.jpg">
+            <img src="bild2.jpg" style="display: none;">
+            <p id="regler">
+                Fem i rad ger vinst!
+            </p>
+            <p id="belongsto">
+                Denna lott tillhör
+            </p>
+        </div>
+        <div id="brickor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>B</th>
+                        <th>I</th>
+                        <th>N</th>
+                        <th>G</th>
+                        <th>O</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>        
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+
+            const lottnummer = $("#lottnummer span");
+            lottnummer.text(Math.floor(Math.random() * 10000).toString().padStart(4, '0') + '-' + Math.floor(Math.random() * 100000).toString().padStart(5, '0'));
+
+            const brickaClone = $("table");
+            $("table").after(brickaClone.clone()).after(brickaClone.clone());
+
+            const bild = $("#vinster img");
+            bild.click(function () {
+                bild.toggle();
+            });
+            
+            for (var i=0; i<3; i++) {
+                makeBricka();
+            }
+            function makeBricka() {
+                const bricka = $("table:not(.numbered):first tbody");
+                for (var i = 0; i < 15; i++) {
+                    bricka.append("<tr><td></td><td></td><td></td><td></td><td></td></tr>");
+                }
+
+                var i = 0;
+                for (var c = 0; c < 5; c++) {
+                    const startNum = (c * 15) + 1;
+
+                    for (var r = 0; r < 15; r++) {
+                        const number = startNum + r;
+
+                        const cells = bricka.find(`td:nth-child(${c + 1}):not(.numbered)`);
+                        const randomCell = cells.eq(Math.floor(Math.random() * cells.length));
+
+                        randomCell.text(number).addClass("numbered")
+                    }
+                }
+                bricka.parent().addClass("numbered");
+            }
+        });
+    </script>
+</body>
+
+</html>

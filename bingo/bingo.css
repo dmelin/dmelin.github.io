@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
+
+#spelplan {
+    display: flex;
+
+    font-family: "Bangers", sans-serif;
+    width: 100%;
+}
+
+#vinster {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-right: 50px;
+    text-align: center;
+}
+#vinster img {
+    width: 100%;
+    height: auto;
+}
+#lottnummer {
+    text-align: center;
+}
+#regler {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #09c;
+}
+#belongsto {
+    font-size: 12px;
+    border-bottom: 1px dotted #000;
+    padding-bottom: 80px;
+}
+
+#brickor {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+td, th {
+    padding: 10px;
+    border-radius: 5px;
+    border-width: 1px;
+    border-style: solid;
+    text-align: center;
+
+}
+thead td, thead th {
+    border: none;
+}
+
+tr:nth-child(1) td { border-color: hsl(0, 100%, 50%); }     /* Red */
+tr:nth-child(2) td { border-color: hsl(24, 100%, 50%); }    /* Orange-Red */
+tr:nth-child(3) td { border-color: hsl(48, 100%, 50%); }    /* Orange */
+tr:nth-child(4) td { border-color: hsl(72, 100%, 50%); }    /* Yellow-Green */
+tr:nth-child(5) td { border-color: hsl(96, 100%, 50%); }    /* Green-Yellow */
+tr:nth-child(6) td { border-color: hsl(120, 100%, 50%); }   /* Green */
+tr:nth-child(7) td { border-color: hsl(144, 100%, 50%); }   /* Green-Blue */
+tr:nth-child(8) td { border-color: hsl(168, 100%, 50%); }   /* Turquoise */
+tr:nth-child(9) td { border-color: hsl(192, 100%, 50%); }   /* Light Blue */
+tr:nth-child(10) td { border-color: hsl(216, 100%, 50%); }  /* Blue */
+tr:nth-child(11) td { border-color: hsl(240, 100%, 50%); }  /* Indigo */
+tr:nth-child(12) td { border-color: hsl(264, 100%, 50%); }  /* Purple */
+tr:nth-child(13) td { border-color: hsl(288, 100%, 50%); }  /* Pink-Purple */
+tr:nth-child(14) td { border-color: hsl(312, 100%, 50%); }  /* Pink */
+tr:nth-child(15) td { border-color: hsl(336, 100%, 50%); }  /* Pink-Red */
