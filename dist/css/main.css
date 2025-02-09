@@ -1,0 +1,179 @@
+* {
+  transition: all 0.5s;
+}
+
+html {
+  font-size: 10px;
+  height: 100vh;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  font-size: 10px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.9);
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "header header" "menu main" "footer footer";
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+@media screen and (max-width: 1000px) {
+  body {
+    grid-template-areas: "header menu" "main main" "footer footer";
+  }
+}
+body header {
+  grid-area: header;
+  padding: 0.5rem;
+}
+body header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: normal;
+}
+body menu {
+  grid-area: menu;
+  margin: 0;
+  padding: 0;
+  border-right: 1px dotted rgba(0, 0, 0, 0.6);
+  font-size: 1.4rem;
+}
+@media screen and (max-width: 1000px) {
+  body menu {
+    display: none;
+  }
+}
+body menu ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column-reverse;
+}
+body menu ul li {
+  margin: 0;
+  padding: 0;
+}
+body menu ul li a {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.9);
+  text-transform: capitalize;
+}
+body menu ul li a.active {
+  padding-left: 2rem;
+}
+body menu ul li a .title {
+  color: rgba(0, 0, 0, 0.9);
+}
+body menu ul li a .date {
+  font-size: 1.2rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+body main {
+  grid-area: main;
+  display: flex;
+  justify-content: center;
+}
+body main #post-content {
+  padding: 0.5rem;
+  width: 500px;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+@media screen and (max-width: 1000px) {
+  body main #post-content {
+    width: 100%;
+    max-width: 500px;
+  }
+}
+body main #post-content post-title {
+  display: none;
+}
+body main #post-content .meta {
+  display: flex;
+  justify-content: space-between;
+  text-transform: uppercase;
+}
+body main #post-content .meta post-time, body main #post-content .meta post-category {
+  color: rgba(0, 0, 0, 0.3);
+}
+body main #post-content h2 {
+  font-size: 2.4rem;
+  font-weight: normal;
+  margin: 0 0 0.5rem 0;
+  padding: 0 0 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+}
+body main #post-content content {
+  font-size: 1.6rem;
+}
+body main #post-content content p {
+  font-family: "Arial", sans-serif;
+  font-size: inherit;
+}
+body main #post-content content p a {
+  color: #069;
+  text-decoration: none;
+}
+body main #post-content content p a:hover {
+  text-decoration: underline;
+}
+body main #post-content content figure {
+  margin: 0 auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  border-radius: 5px;
+  background: #f4f4f4;
+  cursor: pointer;
+}
+body main #post-content content figure:hover {
+  background: #e4e4e4;
+}
+body main #post-content content figure img {
+  margin: 0 auto;
+  display: block;
+  max-height: 350px;
+  max-width: 100%;
+}
+body main #post-content content figure figcaption {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  padding-top: 0.5rem;
+  text-align: center;
+}
+body main #post-content content figure.opened {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+body main #post-content content figure.opened img {
+  max-height: calc(100vh - 72px);
+  max-width: calc(100vw - 30px);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+}
+body main #post-content content figure.opened figcaption {
+  opacity: 0.5;
+}
+body footer {
+  grid-area: footer;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/*# sourceMappingURL=main.css.map */
