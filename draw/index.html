@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Drawing App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #canvas-container {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #333;
+            width: 800px;
+            height: 600px;
+        }
+        #canvas-container canvas {
+            /* background-color: white; */
+            border: 1px dotted #333;
+            cursor: crosshair;
+            position: absolute;
+
+            left: 0;
+            top: 0;
+        }
+        #canvas-container canvas:first-child.not-focused {
+            pointer-events: all;
+            opacity: 1;
+        }
+
+        .controls {
+            margin: 10px 0;
+        }
+        button {
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
+
+        .not-focused {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Drawing App</h1>
+    
+    <div class="controls">
+        <label for="tool-select">Select tool:</label>
+        <select id="tool-select">
+            <option value="pen">Pen</option>
+            <option value="fill">Fill</option>
+        </select>
+        
+        <label for="color-picker">Color:</label>
+        <input type="color" id="color-picker" value="#000000">
+        
+        <label for="line-width">Line width:</label>
+        <input type="range" id="line-width" min="1" max="50" value="5">
+        <span id="width-value">5</span>px
+        
+        <button id="clear-canvas">Clear Canvas</button>
+    </div>
+    
+    <div id="canvas-container">
+        <canvas id="" width="800" height="600"></canvas>
+        <canvas id="" width="800" height="600" class="not-focused"></canvas>
+    </div>
+    
+    <div id="layers">
+        <input type="radio" name="layer" id="layer1" value="0" checked>
+        <label for="layer1">Layer 1</label>
+        <input type="radio" name="layer" id="layer2" value="1">
+        <label for="layer2">Layer 2</label>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
