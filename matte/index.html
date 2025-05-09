@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matte</title>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: "Sour Gummy", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings:
+                "wdth" 100;
+
+            background: lightblue;
+
+            overflow: hidden;
+        }
+
+        body.correct {
+            /* background-color: #4CAF50 !important; */
+            /* Grön */
+            transition: background-color 0.3s;
+        }
+
+        body.incorrect {
+            /* background-color: #f44336 !important; */
+            /* Röd */
+            transition: background-color 0.3s;
+        }
+
+        .num1,
+        .num2,
+        .operator {
+            flex: 1;
+            font-size: 25vw;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .num1 img,
+        .num2 img {
+            width: 20vw;
+            height: 20vw;
+            transform: rotate(var(--rotate));
+
+            mix-blend-mode: multiply;
+        }
+
+        .answer {
+            display: flex;
+            border-top: 3px solid #000;
+            background: white;
+        }
+
+        .answer span,
+        .answer input,
+        .answer button {
+            font-size: 25vw;
+            text-align: center;
+            border: none;
+            outline: none;
+        }
+
+        .answer span {
+            flex: 1;
+        }
+
+        .answer input {
+            width: 50%;
+            background: transparent;
+            color: #000;
+            text-align: center;
+            font-family: inherit;
+            caret-color: transparent;
+        }
+
+        .answer button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+
+            svg {
+                width: 25vw;
+                height: 25vw;
+            }
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="num1">
+
+    </div>
+    <div class="operator">
+
+    </div>
+    <div class="num2">
+    </div>
+
+    <form class="answer">
+        <span>=</span>
+        <input type="number" value="5" placeholder="?">
+        <button type="submit" class="check"><i data-feather="arrow-right"></i></button>
+    </form>
+
+    <audio id="audio" src="sounds/correct.mp3"></audio>
+    <audio id="audio2" src="sounds/incorrect.mp3"></audio>
+
+    <script>
+        feather.replace();
+
+        $ = jQuery;
+        $(document).ready(function () {
+            generateProblem();
+
+            $(".answer").submit(function (event) {
+                event.preventDefault();
+                const answer = parseInt($(".answer input").val());
+                const num1 = parseInt($(".num1").attr("data-value"));
+                const num2 = parseInt($(".num2").attr("data-value"));
+                const operator = $(".operator").text();
+
+                let correctAnswer;
+                if (operator === '+') {
+                    correctAnswer = num1 + num2;
+                } else {
+                    correctAnswer = num1 - num2;
+                }
+
+                if (answer === correctAnswer) {
+                    $("#audio")[0].play();
+                    $("body").addClass("correct").removeClass("incorrect");
+                    setTimeout(() => {
+                        $("body").removeClass("correct");
+                    }, 800);
+                    generateProblem();
+                } else {
+                    $("#audio2")[0].play();
+                    $("body").addClass("incorrect").removeClass("correct");
+                    setTimeout(() => {
+                        $("body").removeClass("incorrect");
+                    }, 800);
+                    $(".answer input").val("").focus();
+                }
+            });
+
+            $(".answer input").on("blur", function () {
+                $(this).focus();
+            });
+        })
+
+        function generateProblem() {
+            let num1 = Math.floor(Math.random() * 5) + 1;
+            let num2 = Math.floor(Math.random() * 5) + 1;
+
+            const operator = '+'; //Math.random() < 0.5 ? '+' : '-';
+
+            if (operator === '-') {
+                if (num1 < num2) {
+                    const temp = num1;
+                    num1 = num2;
+                    num2 = temp;
+                }
+            }
+
+            if (Math.random() < 0.5) {
+                console.log("num1", num1);
+                let num1Icon = Math.floor(Math.random() * 4) + 1;
+                var num1IconCode = '';
+                for (var i = 1; i <= num1; i++) {
+                    num1IconCode += `<img src="images/${num1Icon}.png" alt="icon" width="50px" height="50px" style="--rotate: ${Math.floor(Math.random() * 360)}deg;">`;
+                }
+                num2IconCode = num2;
+            } else {
+                num1IconCode = num1;
+                if (Math.random() < 0.5) {
+                    let num2Icon = Math.floor(Math.random() * 4) + 1;
+                    var num2IconCode = '';
+                    for (var i = 1; i <= num2; i++) {
+                        num2IconCode += `<img src="images/${num2Icon}.png" alt="icon" width="50px" height="50px" style="--rotate: ${Math.floor(Math.random() * 360)}deg;">`;
+                    }
+                } else {
+                    num2IconCode = num2;
+                }
+            }
+
+            $(".answer input").val("").focus();
+            $(".operator").text(operator);
+            $(".num1").html(num1IconCode).attr("data-value", num1);
+            $(".num2").html(num2IconCode).attr("data-value", num2);
+        }
+    </script>
+</body>
+
+</html>
