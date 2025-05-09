@@ -15,6 +15,8 @@
         rel="stylesheet">
 
     <style>
+        html {
+        }
         html,
         body {
             height: 100%;
@@ -31,7 +33,7 @@
             font-variation-settings:
                 "wdth" 100;
 
-            background: lightblue;
+            background: forestgreen;
 
             overflow: hidden;
         }
@@ -48,21 +50,36 @@
             transition: background-color 0.3s;
         }
 
+        .game {
+            width: min(100vw, 800px);
+            margin: auto;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+
+            background: #f4f4f4
+        }
         .num1,
         .num2,
         .operator {
             flex: 1;
-            font-size: 25vw;
+            font-size: 120px;
 
             display: flex;
             justify-content: center;
             align-items: center;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .num1 img,
         .num2 img {
-            width: 20vw;
-            height: 20vw;
+            width: 1em;
+            height: 1em;
             transform: rotate(var(--rotate));
 
             mix-blend-mode: multiply;
@@ -77,18 +94,18 @@
         .answer span,
         .answer input,
         .answer button {
-            font-size: 25vw;
+            width: calc(100% / 3);
+            box-sizing: border-box;
+            font-size: 120px;
             text-align: center;
             border: none;
             outline: none;
         }
 
         .answer span {
-            flex: 1;
         }
 
         .answer input {
-            width: 50%;
             background: transparent;
             color: #000;
             text-align: center;
@@ -103,8 +120,8 @@
             background: transparent;
 
             svg {
-                width: 25vw;
-                height: 25vw;
+                width: 1em;
+                height: 1em;
             }
         }
 
@@ -126,20 +143,22 @@
 </head>
 
 <body>
-    <div class="num1">
+    <div class="game">
+        <div class="num1">
 
+        </div>
+        <div class="operator">
+    
+        </div>
+        <div class="num2">
+        </div>
+    
+        <form class="answer">
+            <span>=</span>
+            <input type="number" value="5" placeholder="?">
+            <button type="submit" class="check"><i data-feather="arrow-right"></i></button>
+        </form>    
     </div>
-    <div class="operator">
-
-    </div>
-    <div class="num2">
-    </div>
-
-    <form class="answer">
-        <span>=</span>
-        <input type="number" value="5" placeholder="?">
-        <button type="submit" class="check"><i data-feather="arrow-right"></i></button>
-    </form>
 
     <audio id="audio" src="sounds/correct.mp3"></audio>
     <audio id="audio2" src="sounds/incorrect.mp3"></audio>
