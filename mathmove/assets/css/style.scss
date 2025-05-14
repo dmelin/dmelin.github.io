@@ -63,7 +63,7 @@ body {
 	grid-template-columns: repeat(5, 1fr);
 
 	.number-tile {
-		background: url("/assets/img/balloon.png") no-repeat center center;
+		background: url("../img/balloon.png") no-repeat center center;
         background-size: contain;
 		display: flex;
 		justify-content: center;
@@ -103,7 +103,7 @@ body {
 
     font-size: 60px;
 
-    background: url("/assets/img/answer.png") no-repeat center center;
+    background: url("../img/answer.png") no-repeat center center;
     background-size: contain;
 }
 .question, .answer {

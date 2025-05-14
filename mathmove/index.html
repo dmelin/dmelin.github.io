@@ -6,15 +6,15 @@
 		<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-		<link rel="stylesheet" href="assets/css/style.css" type="text/css" />
+		<link rel="stylesheet" href="/mathmove/assets/css/style.css" type="text/css" />
 	</head>
 	<body>
 		<video id="success-video" muted playsinline>
-			<source src="assets/video/success.mp4" type="video/mp4" />
+			<source src="/mathmove/assets/video/success.mp4" type="video/mp4" />
 		</video>
-		<audio id="success-sound" src="assets/sounds/success.mp3" preload="auto"></audio>
-		<audio id="fail-sound" src="assets/sounds/fail.mp3" preload="auto"></audio>
-		<audio id="pickup-sound" src="assets/sounds/pickup.mp3" preload="auto"></audio>
+		<audio id="success-sound" src="/mathmove/assets/sounds/success.mp3" preload="auto"></audio>
+		<audio id="fail-sound" src="/mathmove/assets/sounds/fail.mp3" preload="auto"></audio>
+		<audio id="pickup-sound" src="/mathmove/assets/sounds/pickup.mp3" preload="auto"></audio>
 		<div id="app">
 			<div class="playarea" v-show="!paused">
 				<div class="question">{{ question.text }}</div>
