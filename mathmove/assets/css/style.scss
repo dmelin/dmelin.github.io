@@ -1,0 +1,141 @@
+html {
+    height: 100%;
+}
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+#success-video {
+    position: fixed;
+    z-index: 99;
+    left: 0;
+    top: 0;
+    width: 100%;
+
+    aspect-ratio: 4 / 3;
+
+    object-fit: cover;
+
+    mix-blend-mode:lighten;
+}
+.playarea {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+
+	display: grid;
+	grid-template-columns: 70% 30%;
+	grid-template-rows: 70% 30%;
+	grid-template-areas:
+		"grid grid"
+		"question answer";
+    
+    gap: 10px;
+
+	position: absolute;
+	z-index: 2;
+	left: 0;
+	right: 0;
+}
+
+@media (max-aspect-ratio: 4/3) {
+  .playarea, #webcam {
+    height: 100%;
+    width: auto;
+  }
+}
+
+@media (min-aspect-ratio: 4/3) {
+  .playarea, #webcam {
+    max-width: calc(100vh * (4 / 3)); // för SCSS
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
+.grid {
+	display: grid;
+    grid-area: grid;
+
+	gap: 10px;
+
+	grid-template-columns: repeat(5, 1fr);
+
+	.number-tile {
+		background: url("/assets/img/balloon.png") no-repeat center center;
+        background-size: contain;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		font-size: 60px;
+
+        transform: scale(0.8);
+
+        transition: all 0.3s ease-in-out;
+	}
+	.selected {
+		animation: balloon-bounce 0.5s ease-in-out;
+        animation-iteration-count: infinite;
+
+        transform: scale(1);
+	}
+}
+.question {
+    grid-area: question;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 60px;
+
+        margin: 20px;
+        background: white;
+        border-radius: 25px;
+
+}
+.answer {
+    grid-area: answer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 60px;
+
+    background: url("/assets/img/answer.png") no-repeat center center;
+    background-size: contain;
+}
+.question, .answer {
+
+}
+#webcam {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scaleX(-1);
+
+    z-index: 0;
+    object-fit: cover;
+
+    filter: grayscale(0.5) contrast(10) hue-rotate(180deg);
+}
+
+
+@keyframes balloon-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(-10px) scale(1.05, 0.95);
+  }
+  50% {
+    transform: translateY(5px) scale(0.97, 1.03);
+  }
+  70% {
+    transform: translateY(-6px) scale(1.02, 0.98);
+  }
+}

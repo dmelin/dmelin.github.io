@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="sv">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Matteäventyr</title>
+		<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+		<link rel="stylesheet" href="assets/css/style.css" type="text/css" />
+	</head>
+	<body>
+		<video id="success-video" muted playsinline>
+			<source src="assets/video/success.mp4" type="video/mp4" />
+		</video>
+		<audio id="success-sound" src="assets/sounds/success.mp3" preload="auto"></audio>
+		<audio id="fail-sound" src="assets/sounds/fail.mp3" preload="auto"></audio>
+		<audio id="pickup-sound" src="assets/sounds/pickup.mp3" preload="auto"></audio>
+		<div id="app">
+			<div class="playarea" v-show="!paused">
+				<div class="question">{{ question.text }}</div>
+				<div class="answer">{{ answer }}</div>
+
+				<div class="grid">
+					<div
+						v-for="(num, index) in shuffledNumbers"
+						:key="index"
+						class="number-tile"
+						:class="{ selected: selectedIndex === index }"
+					>
+						{{ num }}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<video id="webcam" autoplay muted playsinline></video>
+
+		<script>
+			const app = Vue.createApp({
+				data() {
+					return {
+						numbers: Array.from({ length: 10 }, (_, i) => i),
+						shuffledNumbers: [],
+						selectedIndex: null,
+						answer: "",
+						question: {
+							a: 0,
+							b: 0,
+							text: "",
+							correct: 0,
+						},
+						cols: 5,
+						rows: 2,
+						gestureCooldown: 0,
+						paused: false,
+					};
+				},
+				mounted() {
+					this.newQuestion();
+					this.setupHandTracking();
+				},
+				methods: {
+					shuffleNumbers() {
+						this.shuffledNumbers = [...this.numbers].sort(() => Math.random() - 0.5);
+					},
+					newQuestion() {
+						const a = Math.floor(Math.random() * 10);
+						const b = Math.floor(Math.random() * 10);
+						this.question = {
+							a,
+							b,
+							text: `${a} + ${b}`,
+							correct: a + b,
+						};
+						this.answer = "";
+						this.shuffleNumbers();
+					},
+					selectNumber(index) {
+						const num = this.shuffledNumbers[index];
+						this.answer += num;
+
+						if (parseInt(this.answer) === this.question.correct) {
+							setTimeout(() => {
+								this.paused = true;
+								const successVideo = document.getElementById("success-video");
+								successVideo.currentTime = 0;
+								successVideo.play();
+
+								const successSound = document.getElementById("success-sound");
+								successSound.currentTime = 0;
+								successSound.play();
+
+								setTimeout(() => {
+									this.newQuestion();
+									this.paused = false;
+								}, 3000);
+							}, 100);
+						} else if (this.answer.length >= this.question.correct.toString().length) {
+							setTimeout(() => {
+								const failSound = document.getElementById("fail-sound");
+								failSound.currentTime = 0;
+								failSound.play();
+
+								this.answer = "";
+							}, 100);
+						}
+					},
+					clearAnswer() {
+						this.answer = "";
+					},
+					setupHandTracking() {
+						const videoElement = document.getElementById("webcam");
+						const hands = new Hands({
+							locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+						});
+
+						hands.setOptions({
+							maxNumHands: 1,
+							modelComplexity: 1,
+							minDetectionConfidence: 0.7,
+							minTrackingConfidence: 0.7,
+						});
+
+						hands.onResults(this.handleHandResults);
+
+						const camera = new Camera(videoElement, {
+							onFrame: async () => {
+								await hands.send({ image: videoElement });
+							},
+							width: 640,
+							height: 480,
+						});
+
+						camera.start();
+					},
+					handleHandResults(results) {
+						if (!results.multiHandLandmarks.length) {
+							this.selectedIndex = null;
+							return;
+						}
+
+						const landmarks = results.multiHandLandmarks[0];
+
+						// Steg 1: PEKPOSITION – oavsett gest
+						const x = 1 - landmarks[9].x;
+						const y = landmarks[9].y;
+
+						const col = Math.floor(x * this.cols);
+						const row = Math.floor(y * this.rows);
+						const index = row * this.cols + col;
+
+						if (index >= 0 && index < this.shuffledNumbers.length) {
+							this.selectedIndex = index;
+						} else {
+							this.selectedIndex = null;
+						}
+
+						// Steg 2: GEST
+						const now = Date.now();
+						if (now - this.gestureCooldown < 1500) return;
+
+						if (!this.paused && this.isFist(landmarks) && this.selectedIndex !== null) {
+							// Play pickup sound
+							const pickupSound = document.getElementById("pickup-sound");
+							pickupSound.currentTime = 0;
+							pickupSound.play();
+
+							this.selectNumber(this.selectedIndex);
+							this.gestureCooldown = now;
+						}
+					},
+					isThumbsUpGesture(landmarks) {
+						const thumbTip = landmarks[4];
+						const indexTip = landmarks[8];
+						const middleTip = landmarks[12];
+						const ringTip = landmarks[16];
+						const pinkyTip = landmarks[20];
+
+						const foldedFingers =
+							indexTip.y > landmarks[6].y &&
+							middleTip.y > landmarks[10].y &&
+							ringTip.y > landmarks[14].y &&
+							pinkyTip.y > landmarks[18].y;
+
+						const thumbIsUp = thumbTip.y < indexTip.y && thumbTip.y < middleTip.y;
+
+						return foldedFingers && thumbIsUp;
+					},
+					isWaving(landmarks) {
+						const delta = Math.abs(landmarks[0].x - landmarks[9].x); // wrist to palm center
+						return delta > 0.2;
+					},
+					isFist(landmarks) {
+						const wrist = landmarks[0];
+
+						// Mät avstånd mellan fingertoppar och handleden
+						const isFingerFolded = (tip, base) => {
+							const dx = landmarks[tip].x - wrist.x;
+							const dy = landmarks[tip].y - wrist.y;
+							const distance = Math.sqrt(dx * dx + dy * dy);
+							return distance < 0.15; // Justerbart tröskelvärde
+						};
+
+						return (
+							isFingerFolded(8) && // Index tip
+							isFingerFolded(12) && // Middle tip
+							isFingerFolded(16) && // Ring tip
+							isFingerFolded(20) // Pinky tip
+						);
+					},
+				},
+			});
+
+			app.mount("#app");
+		</script>
+	</body>
+</html>
