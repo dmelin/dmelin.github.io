@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat with Daniel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        /* ── CONFIG ─────────────────────────────────────────── */
+        /* Replace these two values before deploying            */
+        :root {
+            --endpoint: 'https://stubbr.dev/daniel/chat';
+        }
+        /* ──────────────────────────────────────────────────── */
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:          #f0ede8;
+            --surface:     #ffffff;
+            --surface2:    #f7f5f2;
+            --border:      rgba(0,0,0,0.08);
+            --text:        #1a1a1a;
+            --text-muted:  #888;
+            --text-hint:   #b0a99f;
+            --bubble-in:   #ffffff;
+            --bubble-out:  #1a1a1a;
+            --bubble-out-text: #f5f5f5;
+            --accent:      #1a1a1a;
+            --dot:         #5cba8a;
+            --danger:      #c0392b;
+            --radius-msg:  18px;
+            --font: 'DM Sans', sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg:          #1a1917;
+                --surface:     #242220;
+                --surface2:    #2d2b28;
+                --border:      rgba(255,255,255,0.07);
+                --text:        #f0ede8;
+                --text-muted:  #888;
+                --text-hint:   #555;
+                --bubble-in:   #2d2b28;
+                --bubble-out:  #f0ede8;
+                --bubble-out-text: #1a1a1a;
+                --accent:      #f0ede8;
+            }
+        }
+
+        html, body {
+            height: 100%;
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100dvh;
+            padding: 16px;
+        }
+
+        .shell {
+            width: 100%;
+            max-width: 480px;
+            height: min(680px, 100dvh - 32px);
+            background: var(--surface);
+            border-radius: 24px;
+            border: 0.5px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 2px 40px rgba(0,0,0,0.07);
+        }
+
+        /* ── HEADER ── */
+        .header {
+            padding: 16px 20px;
+            border-bottom: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface);
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bubble-out-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 500;
+            flex-shrink: 0;
+            letter-spacing: -0.5px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .avatar { color: var(--bg); }
+        }
+
+        .header-text { flex: 1; }
+        .header-name { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.2; }
+        .header-status { font-size: 12px; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+
+        .status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--dot);
+            flex-shrink: 0;
+        }
+
+        /* ── MESSAGES ── */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            scroll-behavior: smooth;
+        }
+
+        .messages::-webkit-scrollbar { width: 4px; }
+        .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .row {
+            display: flex;
+            align-items: flex-end;
+            gap: 7px;
+            animation: fadein 0.18s ease;
+        }
+
+        @keyframes fadein {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .row.out { justify-content: flex-end; }
+        .row.in  { justify-content: flex-start; }
+
+        .row-avatar {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bubble-out-text);
+            font-size: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-bottom: 1px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .row-avatar { color: var(--bg); }
+        }
+
+        .bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            font-size: 14px;
+            line-height: 1.55;
+            border-radius: var(--radius-msg);
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .row.in  .bubble {
+            background: var(--bubble-in);
+            color: var(--text);
+            border: 0.5px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .row.out .bubble {
+            background: var(--bubble-out);
+            color: var(--bubble-out-text);
+            border-bottom-right-radius: 4px;
+        }
+
+        /* typing indicator */
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 13px 16px;
+        }
+
+        .typing-dots span {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: blink 1.3s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes blink {
+            0%, 60%, 100% { opacity: 0.3; transform: scale(0.85); }
+            30%            { opacity: 1;   transform: scale(1); }
+        }
+
+        /* ── ERROR ── */
+        .error-bar {
+            font-size: 12px;
+            color: var(--danger);
+            text-align: center;
+            padding: 4px 16px;
+            min-height: 0;
+            transition: all 0.2s;
+        }
+
+        /* ── INPUT ── */
+        .input-area {
+            padding: 10px 14px 14px;
+            border-top: 0.5px solid var(--border);
+            background: var(--surface);
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .input-wrap {
+            flex: 1;
+            background: var(--surface2);
+            border: 0.5px solid var(--border);
+            border-radius: 22px;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 14px;
+            transition: border-color 0.15s;
+        }
+
+        .input-wrap:focus-within {
+            border-color: rgba(0,0,0,0.2);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .input-wrap:focus-within { border-color: rgba(255,255,255,0.2); }
+        }
+
+        textarea {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: var(--font);
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+            padding: 10px 0;
+            max-height: 110px;
+            overflow-y: auto;
+        }
+
+        textarea::placeholder { color: var(--text-hint); }
+
+        .send-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: opacity 0.15s, transform 0.1s;
+        }
+
+        .send-btn:disabled { opacity: 0.25; cursor: default; }
+        .send-btn:not(:disabled):hover { opacity: 0.8; }
+        .send-btn:not(:disabled):active { transform: scale(0.93); }
+
+        .send-btn svg {
+            width: 16px; height: 16px;
+            fill: none;
+            stroke: var(--bubble-out-text);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .send-btn svg { stroke: var(--bg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+    <div class="header">
+        <div class="avatar">D</div>
+        <div class="header-text">
+            <div class="header-name">Chat with Daniel</div>
+            <div class="header-status">
+                <span class="status-dot"></span>
+                Online
+            </div>
+        </div>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="error-bar" id="error"></div>
+
+    <div class="input-area">
+        <div class="input-wrap">
+            <textarea id="input" placeholder="Message Daniel..." rows="1"></textarea>
+        </div>
+        <button class="send-btn" id="sendBtn" disabled aria-label="Send">
+            <svg viewBox="0 0 24 24">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<script>
+    /* ── CONFIG ── replace before deploying ── */
+    const ENDPOINT = 'https://stubbr.dev/daniel/chat';
+    const SECRET   = 'daniel';
+    /* ──────────────────────────────────────── */
+
+    const msgsEl   = document.getElementById('messages');
+    const inputEl  = document.getElementById('input');
+    const sendBtn  = document.getElementById('sendBtn');
+    const errorEl  = document.getElementById('error');
+
+    let history  = [];
+    let busy     = false;
+    let typingEl = null;
+
+    function scrollBottom() {
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+    }
+
+    function addBubble(role, text) {
+        const row = document.createElement('div');
+        row.className = 'row ' + (role === 'user' ? 'out' : 'in');
+
+        if (role === 'model') {
+            const av = document.createElement('div');
+            av.className = 'row-avatar';
+            av.textContent = 'D';
+            row.appendChild(av);
+        }
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = text;
+        row.appendChild(bubble);
+        msgsEl.appendChild(row);
+        scrollBottom();
+    }
+
+    function showTyping() {
+        typingEl = document.createElement('div');
+        typingEl.className = 'row in';
+
+        const av = document.createElement('div');
+        av.className = 'row-avatar';
+        av.textContent = 'D';
+        typingEl.appendChild(av);
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble typing-dots';
+        bubble.innerHTML = '<span></span><span></span><span></span>';
+        typingEl.appendChild(bubble);
+
+        msgsEl.appendChild(typingEl);
+        scrollBottom();
+    }
+
+    function hideTyping() {
+        if (typingEl) { typingEl.remove(); typingEl = null; }
+    }
+
+    function showError(msg) {
+        errorEl.textContent = msg;
+        setTimeout(() => { errorEl.textContent = ''; }, 4000);
+    }
+
+    async function callEndpoint(contents) {
+        const res = await fetch(ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Talk-To': SECRET
+            },
+            body: JSON.stringify({ contents })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error('Empty response');
+        return text;
+    }
+
+    async function send(userText) {
+        if (busy) return;
+        busy = true;
+        sendBtn.disabled = true;
+        errorEl.textContent = '';
+
+        history.push({ role: 'user', parts: [{ text: userText }] });
+        addBubble('user', userText);
+        showTyping();
+
+        try {
+            const reply = await callEndpoint(history);
+            hideTyping();
+            history.push({ role: 'model', parts: [{ text: reply }] });
+            addBubble('model', reply);
+        } catch (e) {
+            hideTyping();
+            history.pop();
+            showError('Something went sideways. Try again.');
+        }
+
+        busy = false;
+        sendBtn.disabled = inputEl.value.trim().length === 0;
+        inputEl.focus();
+    }
+
+    async function init() {
+        showTyping();
+        try {
+            const initMsg = 'introduce yourself briefly, in your own way';
+            const reply = await callEndpoint([
+                { role: 'user', parts: [{ text: initMsg }] }
+            ]);
+            hideTyping();
+            history.push({ role: 'user',  parts: [{ text: initMsg }] });
+            history.push({ role: 'model', parts: [{ text: reply }] });
+            addBubble('model', reply);
+        } catch (e) {
+            hideTyping();
+            addBubble('model', 'Hey.');
+        }
+    }
+
+    /* ── input auto-resize ── */
+    inputEl.addEventListener('input', () => {
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px';
+        sendBtn.disabled = inputEl.value.trim().length === 0 || busy;
+    });
+
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const text = inputEl.value.trim();
+            if (text && !busy) {
+                inputEl.value = '';
+                inputEl.style.height = 'auto';
+                sendBtn.disabled = true;
+                send(text);
+            }
+        }
+    });
+
+    sendBtn.addEventListener('click', () => {
+        const text = inputEl.value.trim();
+        if (text && !busy) {
+            inputEl.value = '';
+            inputEl.style.height = 'auto';
+            sendBtn.disabled = true;
+            send(text);
+        }
+    });
+
+    init();
+</script>
+</body>
+</html>

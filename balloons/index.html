@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Tracking Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #app {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+            border-bottom: 4px solid #00ff00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .score-display {
+            font-family: 'Courier New', monospace;
+            font-size: 56px;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow:
+                0 0 10px #00ff00,
+                0 0 20px #00ff00,
+                0 0 30px #00ff00;
+            letter-spacing: 8px;
+            animation: flicker 3s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.95; }
+        }
+
+        .score-label {
+            position: absolute;
+            left: 30px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.7;
+        }
+
+        .game-container {
+            width: 100%;
+            height: calc(100vh - 100px);
+            position: relative;
+            flex: 1;
+        }
+
+        .danger-zone {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(180deg, rgba(255, 0, 0, 0.8) 0%, rgba(200, 0, 0, 0.9) 100%);
+            z-index: 50;
+            transition: height 0.5s ease-out;
+            border-top: 4px solid #ff4444;
+            box-shadow: 0 -4px 20px rgba(255, 0, 0, 0.6);
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            transform: scaleX(-1);
+            opacity: 0.3;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            cursor: pointer;
+            /* Ready for CSS transforms like perspective or tilt! */
+            /* Example: transform: perspective(1000px) rotateX(10deg); */
+        }
+
+        .status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 20;
+            font-size: 14px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            z-index: 30;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="score-bar" v-if="gameStarted">
+            <div class="score-label">Score</div>
+            <div class="score-display">{{ score.toString().padStart(6, '0') }}</div>
+        </div>
+
+        <div class="game-container">
+            <video ref="videoElement" autoplay playsinline></video>
+
+            <canvas ref="gameCanvas" @click="onCanvasClick"></canvas>
+
+            <div class="danger-zone" v-if="gameStarted" :style="{ height: dangerZoneHeight + 'vh' }"></div>
+
+            <div class="status">
+                <div>Status: {{ status }}</div>
+                <div v-if="handsDetected > 0">Hands detected: {{ handsDetected }}</div>
+                <div v-if="debugInfo">{{ debugInfo }}</div>
+            </div>
+
+            <div class="loading" v-if="loading">
+                {{ loadingMessage }}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+    <script>
+        const { createApp, markRaw } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    hand: null, // Single hand tracking
+                    targetHand: null, // Target position from MediaPipe
+                    status: 'Initializing...',
+                    loading: true,
+                    loadingMessage: 'Loading hand tracking...',
+                    handsDetected: 0,
+                    debugInfo: '',
+                    canvas: null,
+                    ctx: null,
+                    balloons: [],
+                    balloonIdCounter: 0,
+                    score: 0,
+                    gameStarted: false,
+                    spawnInterval: null,
+                    startBalloon: null,
+                    audioContext: null,
+                    musicLoopInterval: null,
+                    frameCount: 0,
+                    dangerZoneHeight: 0,
+                    redBalloonChance: 15 // Start at 15%
+                };
+            },
+            mounted() {
+                this.initializeCanvas();
+                this.initializeAudio();
+                this.initializeHandTracking();
+                this.animate();
+                this.createStartBalloon();
+            },
+            methods: {
+                initializeCanvas() {
+                    this.canvas = this.$refs.gameCanvas;
+                    this.ctx = this.canvas.getContext('2d');
+
+                    this.resizeCanvas();
+                    window.addEventListener('resize', this.resizeCanvas);
+                },
+                initializeAudio() {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                },
+                playPopSound() {
+                    if (!this.audioContext) return;
+
+                    const startTime = this.audioContext.currentTime;
+                    const noteDuration = 0.08;
+                    const volume = 0.15;
+
+                    // Play a happy ascending arpeggio (C-E-G-C major chord)
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+
+                    notes.forEach((frequency, index) => {
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+
+                        oscillator.type = 'sine'; // Smoother sound for score effect
+                        oscillator.frequency.setValueAtTime(frequency, startTime + (index * noteDuration));
+
+                        // Quick attack and decay
+                        const noteStart = startTime + (index * noteDuration);
+                        gainNode.gain.setValueAtTime(0, noteStart);
+                        gainNode.gain.linearRampToValueAtTime(volume, noteStart + 0.01);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + noteDuration);
+
+                        oscillator.start(noteStart);
+                        oscillator.stop(noteStart + noteDuration);
+                    });
+                },
+                playNote(frequency, startTime, duration, volume = 0.07) {
+                    if (!this.audioContext) return;
+
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+
+                    oscillator.type = 'square'; // Classic 8-bit sound
+                    oscillator.frequency.setValueAtTime(frequency, startTime);
+
+                    // Envelope for a bouncy feel
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+                    gainNode.gain.linearRampToValueAtTime(volume * 0.7, startTime + duration * 0.5);
+                    gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                },
+                playBackgroundMusic() {
+                    if (!this.audioContext) return;
+
+                    const bpm = 160; // Fast and bouncy!
+                    const beatDuration = 60 / bpm;
+
+                    // Note frequencies (C major scale)
+                    const notes = {
+                        C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23,
+                        G4: 392.00, A4: 440.00, B4: 493.88,
+                        C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46,
+                        G5: 783.99, A5: 880.00
+                    };
+
+                    const startTime = this.audioContext.currentTime;
+
+                    // Bouncy melody line (upbeat and cheerful!)
+                    const melody = [
+                        { note: 'E5', beat: 0, duration: 0.5 },
+                        { note: 'E5', beat: 0.5, duration: 0.5 },
+                        { note: 'E5', beat: 1.5, duration: 0.5 },
+                        { note: 'C5', beat: 2, duration: 0.5 },
+                        { note: 'E5', beat: 2.5, duration: 0.5 },
+                        { note: 'G5', beat: 3.5, duration: 1 },
+                        { note: 'G4', beat: 5.5, duration: 1 },
+
+                        { note: 'C5', beat: 8, duration: 0.75 },
+                        { note: 'G4', beat: 9, duration: 0.75 },
+                        { note: 'E4', beat: 10, duration: 0.75 },
+                        { note: 'A4', beat: 11, duration: 0.5 },
+                        { note: 'B4', beat: 11.75, duration: 0.5 },
+                        { note: 'A4', beat: 12.5, duration: 0.5 },
+                        { note: 'G4', beat: 13, duration: 1 },
+                        { note: 'E5', beat: 14, duration: 0.66 },
+                        { note: 'G5', beat: 14.66, duration: 0.66 },
+                        { note: 'A5', beat: 15.33, duration: 0.66 },
+                        { note: 'F5', beat: 16, duration: 0.5 },
+                        { note: 'G5', beat: 16.75, duration: 0.5 },
+                        { note: 'E5', beat: 17.5, duration: 0.75 },
+                        { note: 'C5', beat: 18.5, duration: 0.5 },
+                        { note: 'D5', beat: 19, duration: 0.5 },
+                        { note: 'B4', beat: 19.75, duration: 1 }
+                    ];
+
+                    // Bass line (provides rhythm)
+                    const bass = [
+                        { note: 'C4', beat: 0, duration: 0.25 },
+                        { note: 'C4', beat: 1, duration: 0.25 },
+                        { note: 'C4', beat: 2, duration: 0.25 },
+                        { note: 'C4', beat: 3, duration: 0.25 },
+                        { note: 'G4', beat: 4, duration: 0.25 },
+                        { note: 'G4', beat: 5, duration: 0.25 },
+                        { note: 'G4', beat: 6, duration: 0.25 },
+                        { note: 'G4', beat: 7, duration: 0.25 },
+
+                        { note: 'C4', beat: 8, duration: 0.25 },
+                        { note: 'C4', beat: 9, duration: 0.25 },
+                        { note: 'C4', beat: 10, duration: 0.25 },
+                        { note: 'F4', beat: 11, duration: 0.25 },
+                        { note: 'F4', beat: 12, duration: 0.25 },
+                        { note: 'C4', beat: 13, duration: 0.25 },
+                        { note: 'C4', beat: 14, duration: 0.25 },
+                        { note: 'F4', beat: 15, duration: 0.25 },
+                        { note: 'F4', beat: 16, duration: 0.25 },
+                        { note: 'C4', beat: 17, duration: 0.25 },
+                        { note: 'C4', beat: 18, duration: 0.25 },
+                        { note: 'G4', beat: 19, duration: 0.25 }
+                    ];
+
+                    // Play melody (70% volume)
+                    melody.forEach(({ note, beat, duration }) => {
+                        const time = startTime + (beat * beatDuration);
+                        this.playNote(notes[note], time, duration * beatDuration, 0.056);
+                    });
+
+                    // Play bass (quieter, 70% volume)
+                    bass.forEach(({ note, beat, duration }) => {
+                        const time = startTime + (beat * beatDuration);
+                        this.playNote(notes[note], time, duration * beatDuration, 0.035);
+                    });
+                },
+                startBackgroundMusic() {
+                    if (!this.audioContext) return;
+
+                    // Play music immediately
+                    this.playBackgroundMusic();
+
+                    // Loop duration (about 21 beats at 160 BPM = ~7.875 seconds)
+                    const loopDuration = 7875;
+
+                    // Set up loop
+                    this.musicLoopInterval = setInterval(() => {
+                        this.playBackgroundMusic();
+                    }, loopDuration);
+                },
+                stopBackgroundMusic() {
+                    if (this.musicLoopInterval) {
+                        clearInterval(this.musicLoopInterval);
+                        this.musicLoopInterval = null;
+                    }
+                },
+                resizeCanvas() {
+                    this.canvas.width = window.innerWidth;
+                    const scoreBarHeight = this.gameStarted ? 100 : 0;
+                    this.canvas.height = window.innerHeight - scoreBarHeight;
+                },
+                onCanvasClick() {
+                    if (!this.gameStarted && !this.loading) {
+                        this.startGame();
+                    }
+                },
+                createStartBalloon() {
+                    this.startBalloon = {
+                        x: this.canvas.width / 2,
+                        y: this.canvas.height / 2,
+                        width: 120,
+                        height: 150
+                    };
+                },
+                startGame() {
+                    this.gameStarted = true;
+                    this.startBalloon = null;
+                    this.score = 0;
+                    this.dangerZoneHeight = 0;
+                    this.redBalloonChance = 15; // Reset red balloon chance
+                    this.resizeCanvas(); // Resize canvas to account for score bar
+                    this.startBackgroundMusic(); // Start the theme music!
+                    this.updateSpawnRate();
+                },
+                updateSpawnRate() {
+                    // Clear existing interval
+                    if (this.spawnInterval) {
+                        clearInterval(this.spawnInterval);
+                    }
+
+                    // Calculate spawn interval based on score
+                    // Starts at 2000ms, gradually decreases to 800ms minimum
+                    // Decreases by 40ms per point (slow progression for kids)
+                    const interval = Math.max(800, 2000 - (this.score * 40));
+
+                    // Start spawning balloons at the calculated rate
+                    this.spawnInterval = setInterval(() => {
+                        this.spawnBalloon();
+                    }, interval);
+                },
+                spawnBalloon() {
+                    const waveAmplitude = 50;
+                    const padding = waveAmplitude + 30; // Extra padding for balloon width
+
+                    // Progressive chance of spawning a red (dangerous) balloon
+                    const isRed = Math.random() * 100 < this.redBalloonChance;
+
+                    // Update red balloon chance for next spawn
+                    if (isRed) {
+                        this.redBalloonChance = 15; // Reset to 15% after red spawns
+                    } else {
+                        this.redBalloonChance += 5; // Increase by 5% after green spawns
+                    }
+
+                    const balloon = {
+                        id: this.balloonIdCounter++,
+                        centerX: padding + Math.random() * (this.canvas.width - padding * 2),
+                        x: 0, // Will be calculated with wave
+                        y: this.canvas.height + 50,
+                        width: 50,
+                        height: 70,
+                        speed: 2 + Math.random() * 1.5, // Random speed between 2-3.5 (half speed)
+                        waveAmplitude: waveAmplitude,
+                        waveFrequency: 0.02 + Math.random() * 0.01, // Random wave speed
+                        waveOffset: Math.random() * Math.PI * 2, // Random starting position in wave
+                        isRed: isRed
+                    };
+                    balloon.x = balloon.centerX; // Initialize x position
+                    this.balloons.push(balloon);
+                },
+                updateBalloons() {
+                    // Move balloons up and apply wave motion
+                    this.balloons.forEach(balloon => {
+                        balloon.y -= balloon.speed;
+
+                        // Calculate wave motion (side-to-side)
+                        const waveX = Math.sin(balloon.y * balloon.waveFrequency + balloon.waveOffset) * balloon.waveAmplitude;
+                        balloon.x = balloon.centerX + waveX;
+                    });
+
+                    // Remove balloons that went off screen
+                    this.balloons = this.balloons.filter(balloon => balloon.y > -100);
+
+                    // Check collisions with hands
+                    this.checkCollisions();
+                },
+                checkCollisions() {
+                    const handRadius = 30;
+
+                    // Only check collisions if game is started and hand is tracked
+                    if (this.gameStarted && this.hand) {
+                        this.balloons = this.balloons.filter(balloon => {
+                            // Simple circle-ellipse collision (approximation)
+                            const dx = this.hand.x - balloon.x;
+                            const dy = this.hand.y - balloon.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+
+                            // Collision threshold
+                            const collisionDist = handRadius + (balloon.width / 2);
+
+                            if (distance < collisionDist) {
+                                if (balloon.isRed) {
+                                    // Hit a red balloon - increase danger zone!
+                                    this.dangerZoneHeight += 5;
+                                    this.playPopSound(); // Play pop sound effect!
+                                } else {
+                                    // Hit a green balloon - score!
+                                    this.score++; // Increment score!
+                                    this.playPopSound(); // Play pop sound effect!
+                                    this.updateSpawnRate(); // Update spawn rate based on new score
+                                }
+                                this.spawnBalloon(); // Spawn a new balloon immediately!
+                                return false; // Remove balloon (it popped!)
+                            }
+
+                            return true; // Keep balloon
+                        });
+                    }
+                },
+                animate() {
+                    this.interpolateHandPositions();
+                    this.updateBalloons();
+                    this.draw();
+                    requestAnimationFrame(this.animate);
+                },
+                interpolateHandPositions() {
+                    // Smoothly interpolate hand position toward target position
+                    const lerpFactor = 0.3; // Higher = faster following (0-1)
+
+                    if (this.targetHand && this.hand) {
+                        // Smoothly move hand toward its target
+                        this.hand.x += (this.targetHand.x - this.hand.x) * lerpFactor;
+                        this.hand.y += (this.targetHand.y - this.hand.y) * lerpFactor;
+                    } else if (this.targetHand && !this.hand) {
+                        // Initialize hand position
+                        this.hand = { ...this.targetHand };
+                    } else if (!this.targetHand) {
+                        // No hand detected
+                        this.hand = null;
+                    }
+                },
+                draw() {
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                    // Draw start balloon
+                    if (this.startBalloon && !this.gameStarted) {
+                        this.ctx.save();
+
+                        // Create bright green gradient from bottom to top
+                        const gradient = this.ctx.createLinearGradient(
+                            this.startBalloon.x,
+                            this.startBalloon.y + this.startBalloon.height / 2,
+                            this.startBalloon.x,
+                            this.startBalloon.y - this.startBalloon.height / 2
+                        );
+                        gradient.addColorStop(0, '#1b5e20');
+                        gradient.addColorStop(0.5, '#4caf50');
+                        gradient.addColorStop(1, '#76ff03');
+
+                        // Draw oval balloon with shadow
+                        this.ctx.shadowBlur = 20;
+                        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                        this.ctx.beginPath();
+                        this.ctx.ellipse(
+                            this.startBalloon.x,
+                            this.startBalloon.y,
+                            this.startBalloon.width / 2,
+                            this.startBalloon.height / 2,
+                            0,
+                            0,
+                            Math.PI * 2
+                        );
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.fill();
+                        this.ctx.closePath();
+
+                        // Reset shadow for play icon
+                        this.ctx.shadowBlur = 0;
+
+                        // Draw play triangle icon
+                        const triangleSize = 40;
+                        const centerX = this.startBalloon.x + 5; // Slight offset to center visually
+                        const centerY = this.startBalloon.y;
+
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(centerX - triangleSize / 3, centerY - triangleSize / 2);
+                        this.ctx.lineTo(centerX - triangleSize / 3, centerY + triangleSize / 2);
+                        this.ctx.lineTo(centerX + triangleSize * 2 / 3, centerY);
+                        this.ctx.closePath();
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.stroke();
+
+                        this.ctx.restore();
+                    }
+
+                    // Draw balloons
+                    this.balloons.forEach(balloon => {
+                        this.ctx.save();
+
+                        // Create gradient based on balloon type
+                        const gradient = this.ctx.createLinearGradient(
+                            balloon.x,
+                            balloon.y + balloon.height / 2,
+                            balloon.x,
+                            balloon.y - balloon.height / 2
+                        );
+
+                        if (balloon.isRed) {
+                            // Red dangerous balloon
+                            gradient.addColorStop(0, '#8b0000');
+                            gradient.addColorStop(0.5, '#ff0000');
+                            gradient.addColorStop(1, '#ff6666');
+                        } else {
+                            // Green normal balloon
+                            gradient.addColorStop(0, '#2d5016');
+                            gradient.addColorStop(1, '#76ff03');
+                        }
+
+                        // Draw oval balloon
+                        this.ctx.beginPath();
+                        this.ctx.ellipse(
+                            balloon.x,
+                            balloon.y,
+                            balloon.width / 2,
+                            balloon.height / 2,
+                            0,
+                            0,
+                            Math.PI * 2
+                        );
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.fill();
+                        this.ctx.closePath();
+
+                        this.ctx.restore();
+                    });
+
+                    // Draw hand circle or fallback circle
+                    if (this.hand) {
+                        // Draw tracked hand (filled black circle)
+                        this.ctx.beginPath();
+                        this.ctx.arc(this.hand.x, this.hand.y, 30, 0, Math.PI * 2);
+                        this.ctx.fillStyle = 'black';
+                        this.ctx.fill();
+                        this.ctx.shadowBlur = 15;
+                        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                        this.ctx.closePath();
+                    } else if (this.gameStarted) {
+                        // Draw fallback circle in center (outlined only)
+                        this.ctx.save();
+                        this.ctx.beginPath();
+                        this.ctx.arc(this.canvas.width / 2, this.canvas.height / 2, 30, 0, Math.PI * 2);
+                        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.stroke();
+                        this.ctx.closePath();
+                        this.ctx.restore();
+                    }
+                },
+                async initializeHandTracking() {
+                    try {
+                        this.status = 'Loading MediaPipe Hands...';
+
+                        this.mediaHands = markRaw(new Hands({
+                            locateFile: (file) => {
+                                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                            }
+                        }));
+
+                        this.mediaHands.setOptions({
+                            maxNumHands: 1, // Track only one hand
+                            modelComplexity: 0, // Use lite model for better performance
+                            minDetectionConfidence: 0.5,
+                            minTrackingConfidence: 0.5
+                        });
+
+                        this.mediaHands.onResults(this.onResults);
+
+                        this.status = 'Requesting camera access...';
+
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            video: {
+                                width: 1280,
+                                height: 720,
+                                facingMode: 'user'
+                            }
+                        });
+
+                        this.videoElement = markRaw(this.$refs.videoElement);
+                        this.videoElement.srcObject = stream;
+
+                        await new Promise(resolve => {
+                            this.videoElement.onloadedmetadata = resolve;
+                        });
+
+                        this.camera = markRaw(new Camera(this.videoElement, {
+                            onFrame: async () => {
+                                // Only process hand tracking every 3rd frame for performance
+                                this.frameCount++;
+                                if (this.frameCount % 3 === 0) {
+                                    await this.mediaHands.send({ image: this.videoElement });
+                                }
+                            },
+                            width: 1280,
+                            height: 720
+                        }));
+
+                        this.camera.start();
+
+                        this.loading = false;
+                        this.status = 'Ready! Show your hands to the camera';
+
+                    } catch (error) {
+                        console.error('Error initializing hand tracking:', error);
+                        this.status = 'Error: ' + error.message;
+                        this.loadingMessage = 'Failed to initialize. Please allow camera access.';
+                    }
+                },
+                onResults(results) {
+                    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                        this.handsDetected = 1;
+
+                        const handRadius = 30; // Same as circle radius
+
+                        const landmarks = results.multiHandLandmarks[0]; // Only first hand
+                        const wrist = landmarks[0];
+                        const middleFingerMcp = landmarks[9];
+
+                        const avgX = (wrist.x + middleFingerMcp.x) / 2;
+                        const avgY = (wrist.y + middleFingerMcp.y) / 2;
+
+                        // Use window width for X (video covers full width)
+                        // Use canvas height for Y (accounts for score bar)
+                        const canvasHeight = this.canvas ? this.canvas.height : window.innerHeight;
+
+                        let x = window.innerWidth - (avgX * window.innerWidth);
+                        let y = avgY * canvasHeight;
+
+                        // Calculate danger zone height in pixels based on canvas height
+                        const dangerZonePixels = (this.dangerZoneHeight / 100) * canvasHeight;
+                        const maxY = canvasHeight - dangerZonePixels - handRadius;
+
+                        // Clamping with proper boundaries
+                        x = Math.max(handRadius, Math.min(window.innerWidth - handRadius, x));
+                        y = Math.max(handRadius, Math.min(maxY, y));
+
+                        // Update target position
+                        this.targetHand = { x, y };
+                        this.debugInfo = `Circle at: (${x.toFixed(0)},${y.toFixed(0)})`;
+                        this.status = 'Tracking hand...';
+                    } else {
+                        this.handsDetected = 0;
+                        this.targetHand = null;
+                        this.debugInfo = '';
+                        this.status = 'No hand detected. Show your hand!';
+                    }
+                }
+            },
+            beforeUnmount() {
+                window.removeEventListener('resize', this.resizeCanvas);
+                this.stopBackgroundMusic();
+                if (this.spawnInterval) {
+                    clearInterval(this.spawnInterval);
+                }
+                if (this.camera) {
+                    this.camera.stop();
+                }
+                if (this.videoElement && this.videoElement.srcObject) {
+                    this.videoElement.srcObject.getTracks().forEach(track => track.stop());
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
