@@ -1,0 +1,16 @@
+{
+  "name": "daniel-melin",
+  "version": "1.0.0",
+  "description": "Daniel Melin - Personal Website",
+  "scripts": {
+    "build": "sass assets/scss:assets/css --style compressed",
+    "watch": "sass assets/scss:assets/css --watch",
+    "dev": "sass assets/scss:assets/css --watch"
+  },
+  "keywords": [],
+  "author": "Daniel Melin",
+  "license": "ISC",
+  "devDependencies": {
+    "sass": "^1.83.0"
+  }
+}

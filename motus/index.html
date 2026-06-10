@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motus TMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{scroll-behavior:smooth}
+        body{background:#020c18;font-family:'Space Grotesk',sans-serif;color:#c8dff0}
+        a{text-decoration:none}
+        .mono{font-family:'Space Mono',monospace}
+
+        /* ── NAV ── */
+        nav{display:flex;justify-content:space-between;align-items:center;padding:16px 40px;border-bottom:1px solid rgba(0,200,255,0.1);position:sticky;top:0;z-index:100;background:rgba(2,12,24,0.92);backdrop-filter:blur(8px);max-width:1500px;margin:0 auto;left:0;right:0}
+        .nav-logo{display:flex;align-items:center;gap:10px}
+        .nav-logo svg{width:32px;height:32px}
+        .nav-brand{font-size:15px;font-weight:700;letter-spacing:.04em;color:#fff}
+        .nav-brand span{color:#00c8ff}
+        .nav-links{display:flex;gap:32px}
+        .nav-links a{font-size:11px;color:rgba(200,223,240,0.5);letter-spacing:.06em;text-transform:uppercase;font-family:'Space Mono',monospace;transition:color .2s}
+        .nav-links a:hover{color:#00c8ff}
+        .nav-right{display:flex;align-items:center;gap:16px}
+        .sys-status{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(200,223,240,0.35);font-family:'Space Mono',monospace}
+        .pulse{width:6px;height:6px;border-radius:50%;background:#00ff9d;animation:pulse 2s infinite;flex-shrink:0}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+        .nav-btn{background:transparent;border:1px solid rgba(0,200,255,0.4);color:#00c8ff;padding:7px 18px;font-size:12px;font-family:'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:background .2s}
+        .nav-btn:hover{background:rgba(0,200,255,0.08)}
+
+        /* ── HERO ── */
+        .hero{min-height:100vh;position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:48px;padding:72px 40px 64px;overflow:hidden;max-width:1500px;margin:0 auto}
+        .grid-bg{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.12}
+        .grid-bg svg{width:100%;height:100%}
+        .logo-stage{position:fixed;top:50vh;left:50%;transform:translate(-50%,-50%);width:760px;height:760px;pointer-events:none;z-index:0}
+        .logo-wrap{width:100%;height:100%;will-change:transform}
+        .logo-wrap img{width:100%;height:100%;object-fit:contain;opacity:0.25;filter:saturate(0.5) brightness(1.7)}
+        .hero-text{position:relative;z-index:2}
+        .hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#00c8ff;margin-bottom:20px;font-family:'Space Mono',monospace}
+        .hero-tag::before{content:'';width:20px;height:1px;background:#00c8ff}
+        .hero-h1{font-size:52px;font-weight:700;line-height:1.05;color:#fff;margin-bottom:20px;letter-spacing:-.02em}
+        .hero-h1 .accent{color:#00c8ff}
+        .hero-h1 .dim{color:rgba(255,255,255,0.22)}
+        .hero-sub{font-size:15px;color:rgba(200,223,240,0.5);line-height:1.75;max-width:420px;margin-bottom:36px}
+        .hero-btns{display:flex;gap:12px;align-items:center;margin-bottom:48px}
+        .btn-primary{background:#00c8ff;color:#020c18;padding:12px 30px;font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;border:none;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:opacity .2s}
+        .btn-primary:hover{opacity:.85}
+        .btn-ghost{background:transparent;color:rgba(200,223,240,0.6);padding:12px 24px;font-size:12px;font-family:'Space Grotesk',sans-serif;border:1px solid rgba(200,223,240,0.15);letter-spacing:.04em;cursor:pointer;transition:border-color .2s,color .2s}
+        .btn-ghost:hover{border-color:rgba(200,223,240,0.35);color:#fff}
+        .hero-metrics{display:flex;gap:32px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.06)}
+        .hm-n{font-size:30px;font-weight:700;color:#fff;font-family:'Space Mono',monospace;line-height:1}
+        .hm-n span{color:#00c8ff}
+        .hm-l{font-size:10px;color:rgba(200,223,240,0.35);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+
+        /* ── HUD WIDGET ── */
+        .hud{background:rgba(0,200,255,0.03);border:1px solid rgba(0,200,255,0.15);padding:20px;position:relative;z-index:2;backdrop-filter:blur(10px)}
+        .hud::before{content:'SYS:LIVE';position:absolute;top:-1px;left:20px;font-size:9px;font-family:'Space Mono',monospace;color:#00c8ff;background:rgba(2,12,24,0.8);backdrop-filter:blur(10px);padding:0 8px;letter-spacing:.1em}
+        .hud::after{content:'';position:absolute;top:0;right:0;width:20px;height:20px;border-top:1px solid #00c8ff;border-right:1px solid #00c8ff}
+        .hud-corner-bl{position:absolute;bottom:0;left:0;width:20px;height:20px;border-bottom:1px solid rgba(0,200,255,0.4);border-left:1px solid rgba(0,200,255,0.4)}
+        .hud-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+        .hud-row:last-child{border-bottom:none}
+        .hud-id{font-size:10px;font-family:'Space Mono',monospace;color:rgba(0,200,255,0.4);width:42px;flex-shrink:0}
+        .hud-route{font-size:12px;color:rgba(255,255,255,0.8);flex:1;display:flex;align-items:center;gap:6px}
+        .hud-arrow{color:rgba(0,200,255,0.4);font-size:10px}
+        .hud-bar{flex:0 0 60px;height:3px;background:rgba(255,255,255,0.06);border-radius:1px;overflow:hidden}
+        .hud-fill{height:100%;border-radius:1px}
+        .hud-pct{font-size:10px;font-family:'Space Mono',monospace;color:rgba(200,223,240,0.35);width:28px;text-align:right;flex-shrink:0}
+        .hud-badge{font-size:9px;font-family:'Space Mono',monospace;padding:2px 7px;letter-spacing:.06em;flex-shrink:0}
+        .bd-g{background:rgba(0,255,157,0.1);color:#00ff9d;border:1px solid rgba(0,255,157,0.2)}
+        .bd-b{background:rgba(0,200,255,0.1);color:#00c8ff;border:1px solid rgba(0,200,255,0.2)}
+        .bd-a{background:rgba(255,180,0,0.1);color:#ffb400;border:1px solid rgba(255,180,0,0.2)}
+        .hud-map{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:4px}
+        .hud-city{font-size:10px;color:rgba(200,223,240,0.4);font-family:'Space Mono',monospace;flex:1;text-align:center}
+        .hud-city strong{display:block;color:#fff;font-size:11px}
+        .hud-line{flex:1;height:1px;background:rgba(0,200,255,0.2)}
+        .hud-dot{width:5px;height:5px;border-radius:50%;background:#00c8ff;flex-shrink:0}
+        .hud-dot-dim{width:4px;height:4px;border-radius:50%;background:rgba(0,200,255,0.3);flex-shrink:0}
+
+        /* ── SCANLINE DIVIDER ── */
+        .scan{height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.15),transparent);margin:0 auto;max-width:1500px;padding:0 40px;position:relative;z-index:1}
+
+        /* ── FEATURES ── */
+        .features{padding:80px 40px;max-width:1500px;margin:0 auto;position:relative;z-index:1;background:#020c18}
+        .section-header{display:flex;align-items:baseline;gap:20px;margin-bottom:52px}
+        .section-tag{font-size:10px;font-family:'Space Mono',monospace;color:rgba(0,200,255,0.5);letter-spacing:.12em;text-transform:uppercase}
+        .section-tag::before{content:'// '}
+        .section-h{font-size:28px;font-weight:700;color:#fff;letter-spacing:-.01em}
+        .section-h span{color:rgba(255,255,255,0.2)}
+        .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(0,200,255,0.08)}
+        .feat{background:#020c18;padding:28px 24px;position:relative;overflow:hidden;transition:background .2s}
+        .feat:hover{background:#040f1f}
+        .feat::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:#00c8ff;transition:height .3s}
+        .feat:hover::before{height:100%}
+        .feat-num{font-size:9px;font-family:'Space Mono',monospace;color:rgba(0,200,255,0.25);letter-spacing:.1em;margin-bottom:18px}
+        .feat-icon{font-size:22px;color:rgba(0,200,255,0.6);margin-bottom:14px;display:block}
+        .feat-h{font-size:14px;font-weight:600;color:#fff;margin-bottom:8px;letter-spacing:.01em}
+        .feat-p{font-size:13px;color:rgba(200,223,240,0.4);line-height:1.7}
+
+        /* ── WORKFLOW ── */
+        .workflow{padding:80px 40px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;max-width:1500px;margin:0 auto;position:relative;z-index:1;background:#020c18}
+        .wf-steps{display:flex;flex-direction:column}
+        .section-header-stack{margin-bottom:40px}
+        .section-header-stack .section-tag{display:block;margin-bottom:10px}
+        .section-header-stack .section-h{font-size:28px}
+        .wf-step{display:flex;gap:18px;padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+        .wf-step:last-child{border-bottom:none}
+        .wf-n{font-size:10px;font-family:'Space Mono',monospace;color:#00c8ff;width:28px;padding-top:2px;flex-shrink:0}
+        .wf-h{font-size:14px;font-weight:600;color:#fff;margin-bottom:5px}
+        .wf-p{font-size:13px;color:rgba(200,223,240,0.4);line-height:1.65}
+        .terminal{background:#010a14;border:1px solid rgba(0,200,255,0.12);font-family:'Space Mono',monospace}
+        .term-bar{background:rgba(0,200,255,0.05);padding:10px 16px;border-bottom:1px solid rgba(0,200,255,0.1);display:flex;align-items:center;gap:8px}
+        .term-dot{width:8px;height:8px;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
+        .term-title{font-size:10px;color:rgba(0,200,255,0.4);letter-spacing:.08em;margin-left:4px}
+        .term-body{padding:20px}
+        .tl{display:flex;align-items:baseline;gap:12px;margin-bottom:10px;line-height:1.5}
+        .tl:last-child{margin-bottom:0}
+        .tl-time{color:rgba(0,200,255,0.3);font-size:10px;flex-shrink:0;width:48px}
+        .tl-ev{color:rgba(200,223,240,0.55);font-size:11px}
+        .tl-ev .hi{color:#00ff9d}
+        .tl-ev .lo{color:rgba(200,223,240,0.25)}
+        .tl-ev .warn{color:#ffb400}
+        .tl-ev .inf{color:#00c8ff}
+
+        /* ── MANIFESTO ── */
+        .manifesto{padding:72px 40px;text-align:center;border-top:1px solid rgba(0,200,255,0.07);border-bottom:1px solid rgba(0,200,255,0.07);position:relative;overflow:hidden;max-width:1500px;margin:0 auto;z-index:1;background:#020c18}
+        .manifesto-bg{position:absolute;inset:0;pointer-events:none;opacity:.04}
+        .manifesto-bg svg{width:100%;height:100%}
+        .m-pre{font-size:9px;font-family:'Space Mono',monospace;color:rgba(0,200,255,0.35);letter-spacing:.16em;text-transform:uppercase;margin-bottom:24px}
+        .m-q{font-size:34px;font-weight:700;color:#fff;line-height:1.2;max-width:580px;margin:0 auto 16px;letter-spacing:-.01em}
+        .m-q .dim{color:rgba(255,255,255,0.2)}
+        .m-q .acc{color:#00c8ff}
+        .m-attr{font-size:11px;font-family:'Space Mono',monospace;color:rgba(200,223,240,0.2);letter-spacing:.1em}
+
+        /* ── TESTIMONIALS ── */
+        .testimonials{padding:80px 40px;max-width:1500px;margin:0 auto;position:relative;z-index:1;background:#020c18}
+        .test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+        .test-card{background:rgba(0,200,255,0.03);border:1px solid rgba(0,200,255,0.15);padding:28px 24px;position:relative;transition:border-color .2s,background .2s}
+        .test-card:hover{background:rgba(0,200,255,0.05);border-color:rgba(0,200,255,0.25)}
+        .test-card::before{content:'';position:absolute;top:-1px;left:20px;width:1px;height:24px;background:#00c8ff}
+        .test-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+        .test-avatar{width:48px;height:48px;border-radius:50%;border:2px solid rgba(0,200,255,0.3);object-fit:cover}
+        .test-meta h4{font-size:13px;color:#fff;font-weight:600;margin-bottom:2px}
+        .test-meta p{font-size:10px;color:rgba(0,200,255,0.5);font-family:'Space Mono',monospace;letter-spacing:.06em}
+        .test-quote{font-size:13px;color:rgba(200,223,240,0.5);line-height:1.75;margin-bottom:16px}
+        .test-footer{display:flex;align-items:center;gap:6px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.04)}
+        .test-star{color:#00c8ff;font-size:12px}
+        .test-label{font-size:9px;font-family:'Space Mono',monospace;color:rgba(200,223,240,0.25);letter-spacing:.08em;margin-left:auto}
+
+        /* ── CTA ── */
+        .cta{padding:96px 40px;text-align:center;max-width:1500px;margin:0 auto;position:relative;z-index:1;background:#020c18}
+        .cta-h{font-size:36px;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-.01em}
+        .cta-sub{font-size:15px;color:rgba(200,223,240,0.4);margin-bottom:36px;line-height:1.7}
+        .cta-btn{background:#00c8ff;color:#020c18;padding:14px 44px;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;border:none;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);display:inline-block;transition:opacity .2s}
+        .cta-btn:hover{opacity:.85}
+        .cta-note{font-size:11px;font-family:'Space Mono',monospace;color:rgba(200,223,240,0.2);margin-top:16px;letter-spacing:.04em}
+
+        /* ── FOOTER ── */
+        footer{padding:24px 40px;border-top:1px solid rgba(0,200,255,0.07);display:flex;justify-content:space-between;align-items:center;max-width:1500px;margin:0 auto;position:relative;z-index:1;background:#020c18}
+        .footer-l{font-size:10px;font-family:'Space Mono',monospace;color:rgba(200,223,240,0.2);letter-spacing:.06em}
+        .footer-links{display:flex;gap:28px}
+        .footer-links a{font-size:10px;font-family:'Space Mono',monospace;color:rgba(200,223,240,0.2);letter-spacing:.06em;transition:color .2s}
+        .footer-links a:hover{color:#00c8ff}
+
+        /* ── ICON FONT (Tabler) ── */
+        @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css');
+    </style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+    <div class="nav-logo">
+        <img src="assets/logo_small.png" alt="Motus" style="width:32px;height:32px">
+        <span class="nav-brand">MOTUS<span>.TMS</span></span>
+    </div>
+    <div class="nav-links">
+        <a href="#features">Platform</a>
+        <a href="#workflow">How it works</a>
+        <a href="#cta">Pricing</a>
+        <a href="#cta">About</a>
+    </div>
+    <div class="nav-right">
+        <div class="sys-status"><div class="pulse"></div><span class="mono" style="font-size:11px">SYS OPERATIONAL</span></div>
+        <button class="nav-btn">Request demo</button>
+    </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero" id="hero">
+
+    <div class="grid-bg">
+        <svg viewBox="0 0 1400 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0L0 0 0 40" fill="none" stroke="#00c8ff" stroke-width="0.5"/></pattern></defs>
+            <rect width="1400" height="1000" fill="url(#grid)"/>
+        </svg>
+    </div>
+
+    <div class="logo-stage" id="logoStage">
+        <div class="logo-wrap" id="logoWrap">
+            <img src="assets/motus_map.png" alt="" aria-hidden="true"/>
+        </div>
+    </div>
+
+    <div class="hero-text">
+        <div class="hero-tag">Transport Management System</div>
+        <h1 class="hero-h1">The last TMS<br><span class="accent">you'll ever</span><br><span class="dim">have to buy.</span></h1>
+        <p class="hero-sub">Built from inside the transport business for the transport business. Not assembled from a feature checklist. Every dispatch, delivery, and invoice — in one system that actually works.</p>
+        <div class="hero-btns">
+            <button class="btn-primary">Request a demo</button>
+            <button class="btn-ghost">See the platform</button>
+        </div>
+        <div class="hero-metrics">
+            <div><div class="hm-n">43<span>%</span></div><div class="hm-l">Dispatch time saved</div></div>
+            <div><div class="hm-n">12<span>min</span></div><div class="hm-l">Driver onboarding</div></div>
+            <div><div class="hm-n">99<span>.7</span></div><div class="hm-l">Uptime SLA</div></div>
+        </div>
+    </div>
+
+    <div class="hud">
+        <div class="hud-corner-bl"></div>
+        <div class="hud-row">
+            <span class="hud-id">#4821</span>
+            <span class="hud-route">Örebro <span class="hud-arrow">—›</span> Uppsala</span>
+            <div class="hud-bar"><div class="hud-fill" style="width:74%;background:#00ff9d"></div></div>
+            <span class="hud-pct">74%</span>
+            <span class="hud-badge bd-g">ON ROUTE</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-id">#4820</span>
+            <span class="hud-route">Stockholm <span class="hud-arrow">—›</span> Västerås</span>
+            <div class="hud-bar"><div class="hud-fill" style="width:30%;background:#00c8ff"></div></div>
+            <span class="hud-pct">30%</span>
+            <span class="hud-badge bd-b">DISPATCHED</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-id">#4819</span>
+            <span class="hud-route">Göteborg <span class="hud-arrow">—›</span> Malmö</span>
+            <div class="hud-bar"><div class="hud-fill" style="width:100%;background:#ffb400"></div></div>
+            <span class="hud-pct">—</span>
+            <span class="hud-badge bd-a">POD PEND</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-id">#4818</span>
+            <span class="hud-route">Linköping <span class="hud-arrow">—›</span> Norrköping</span>
+            <div class="hud-bar"><div class="hud-fill" style="width:100%;background:#00ff9d"></div></div>
+            <span class="hud-pct">✓</span>
+            <span class="hud-badge bd-g">DELIVERED</span>
+        </div>
+        <div class="hud-row">
+            <span class="hud-id">#4817</span>
+            <span class="hud-route">Sundsvall <span class="hud-arrow">—›</span> Gävle</span>
+            <div class="hud-bar"><div class="hud-fill" style="width:52%;background:#00ff9d"></div></div>
+            <span class="hud-pct">52%</span>
+            <span class="hud-badge bd-g">ON ROUTE</span>
+        </div>
+        <div class="hud-map">
+            <div class="hud-city"><strong>GBG</strong>Origin</div>
+            <div class="hud-dot-dim"></div>
+            <div class="hud-line"></div>
+            <div class="hud-dot"></div>
+            <div class="hud-line"></div>
+            <div class="hud-city"><strong>ÖRB</strong>ETA 14:22</div>
+            <div class="hud-dot-dim"></div>
+            <div class="hud-line"></div>
+            <div class="hud-dot-dim"></div>
+            <div class="hud-city"><strong>STO</strong>Destination</div>
+        </div>
+    </div>
+
+</section>
+
+<div class="scan"></div>
+
+<!-- ══ FEATURES ══ -->
+<section class="features" id="features">
+    <div class="section-header">
+        <span class="section-tag">Platform capabilities</span>
+        <h2 class="section-h">Everything. <span>One system.</span></h2>
+    </div>
+    <div class="feat-grid">
+        <div class="feat">
+            <div class="feat-num">01 // DISPATCH</div>
+            <i class="ti ti-route feat-icon" aria-hidden="true"></i>
+            <div class="feat-h">Order &amp; dispatch</div>
+            <p class="feat-p">Smart assignment based on driver location, capacity, and SLAs. One click from order to wheels turning.</p>
+        </div>
+        <div class="feat">
+            <div class="feat-num">02 // COMMS</div>
+            <i class="ti ti-truck feat-icon" aria-hidden="true"></i>
+            <div class="feat-h">Driver communications</div>
+            <p class="feat-p">Full job details on the driver's phone. No calls, no paper manifests. POD captured in the field.</p>
+        </div>
+        <div class="feat">
+            <div class="feat-num">03 // BILLING</div>
+            <i class="ti ti-file-invoice feat-icon" aria-hidden="true"></i>
+            <div class="feat-h">Automated billing</div>
+            <p class="feat-p">Invoice fires the moment POD is confirmed. Rental agreements, schedules, custom pricing — handled.</p>
+        </div>
+        <div class="feat">
+            <div class="feat-num">04 // VISIBILITY</div>
+            <i class="ti ti-eye feat-icon" aria-hidden="true"></i>
+            <div class="feat-h">Customer portal</div>
+            <p class="feat-p">Customers track their own shipments. Real-time ETAs and delivery proof — no calls to your team.</p>
+        </div>
+        <div class="feat">
+            <div class="feat-num">05 // ANALYTICS</div>
+            <i class="ti ti-chart-bar feat-icon" aria-hidden="true"></i>
+            <div class="feat-h">Reporting</div>
+            <p class="feat-p">Fleet utilisation, on-time performance, revenue per route. Numbers that drive better decisions.</p>
+        </div>
+        <div class="feat">
+            <div class="feat-num">06 // CONNECT</div>
+            <i class="ti ti-plug feat-icon" aria-hidden="true"></i>
+            <div class="feat-h">Integrations</div>
+            <p class="feat-p">ERP, accounting, fuel cards, telemetry. Motus connects where your data already lives.</p>
+        </div>
+    </div>
+</section>
+
+<div class="scan"></div>
+
+<!-- ══ WORKFLOW ══ -->
+<section class="workflow" id="workflow">
+    <div>
+        <div class="section-header-stack">
+            <span class="section-tag">How it works</span>
+            <h2 class="section-h" style="font-size:28px;margin-top:10px">Order in.<br><span style="color:rgba(255,255,255,0.2)">Invoice out.</span></h2>
+        </div>
+        <div class="wf-steps">
+            <div class="wf-step">
+                <span class="wf-n">01.</span>
+                <div><div class="wf-h">Order received</div><div class="wf-p">Entered manually, imported via API, or captured from your customer portal.</div></div>
+            </div>
+            <div class="wf-step">
+                <span class="wf-n">02.</span>
+                <div><div class="wf-h">Driver dispatched</div><div class="wf-p">Assigned in one click. Driver notified instantly with full job details on their app.</div></div>
+            </div>
+            <div class="wf-step">
+                <span class="wf-n">03.</span>
+                <div><div class="wf-h">Delivery confirmed</div><div class="wf-p">Driver submits POD from the field. Signature, photo, timestamp — captured automatically.</div></div>
+            </div>
+            <div class="wf-step">
+                <span class="wf-n">04.</span>
+                <div><div class="wf-h">Invoice generated</div><div class="wf-p">Billing fires automatically. No chasing, no manual entry, no end-of-month scramble.</div></div>
+            </div>
+        </div>
+    </div>
+    <div class="terminal">
+        <div class="term-bar">
+            <div class="term-dot" style="background:#ff5f57"></div>
+            <div class="term-dot" style="background:#febc2e"></div>
+            <div class="term-dot" style="background:#28c840"></div>
+            <span class="term-title">MOTUS — EVENT LOG — LIVE</span>
+        </div>
+        <div class="term-body">
+            <div class="tl"><span class="tl-time">14:03:41</span><span class="tl-ev"><span class="hi">ORDER_CREATED</span> <span class="lo">#4822</span> Örebro → Uppsala</span></div>
+            <div class="tl"><span class="tl-time">14:03:42</span><span class="tl-ev"><span class="inf">DRIVER_MATCHED</span> <span class="lo">Eriksson, M. — dist 2.1km</span></span></div>
+            <div class="tl"><span class="tl-time">14:03:43</span><span class="tl-ev"><span class="hi">DISPATCHED</span> <span class="lo">ETA calculated → 15:10</span></span></div>
+            <div class="tl"><span class="tl-time">14:08:17</span><span class="tl-ev"><span class="hi">PICKUP_CONFIRMED</span> <span class="lo">GPS verified</span></span></div>
+            <div class="tl"><span class="tl-time">14:12:05</span><span class="tl-ev"><span class="warn">DELAY_DETECTED</span> <span class="lo">+18min — E18 congestion</span></span></div>
+            <div class="tl"><span class="tl-time">14:12:05</span><span class="tl-ev"><span class="inf">CUSTOMER_NOTIFIED</span> <span class="lo">ETA updated → 15:28</span></span></div>
+            <div class="tl"><span class="tl-time">15:31:02</span><span class="tl-ev"><span class="hi">POD_RECEIVED</span> <span class="lo">sig + photo, GPS match ✓</span></span></div>
+            <div class="tl"><span class="tl-time">15:31:03</span><span class="tl-ev"><span class="hi">INVOICE_GENERATED</span> <span class="lo">SEK 4,200 → queued</span></span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ MANIFESTO ══ -->
+<div class="manifesto">
+    <div class="manifesto-bg">
+        <svg viewBox="0 0 1400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs><pattern id="grid2" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0L0 0 0 40" fill="none" stroke="#00c8ff" stroke-width="0.5"/></pattern></defs>
+            <rect width="1400" height="300" fill="url(#grid2)"/>
+        </svg>
+    </div>
+    <div class="m-pre">// MOTUS — PRODUCT PHILOSOPHY</div>
+    <h2 class="m-q">This is not your <span class="acc">next</span> TMS.<br><span class="dim">This is your</span> <span class="acc">last</span> <span class="dim">one.</span></h2>
+    <p class="m-attr">NÄRKEFRAKT OWNED &nbsp;//&nbsp; BUILT IN ÖREBRO &nbsp;//&nbsp; USED ACROSS SWEDEN</p>
+</div>
+
+<!-- ══ TESTIMONIALS ══ -->
+<section class="testimonials">
+    <div class="section-header">
+        <span class="section-tag">What they say</span>
+        <h2 class="section-h">Trucking company owned. <span>Industry tested.</span></h2>
+    </div>
+    <div class="test-grid">
+        <div class="test-card">
+            <div class="test-head">
+                <img src="https://i.pravatar.cc/96?img=12" alt="Sarah Lindström" class="test-avatar">
+                <div class="test-meta">
+                    <h4>Sarah Lindström</h4>
+                    <p>OPS DIR // SWIFT LOGISTICS</p>
+                </div>
+            </div>
+            <p class="test-quote">"We cut dispatch time by 40% in the first month. The system just works. No training manuals, no consultants — we were productive day one."</p>
+            <div class="test-footer">
+                <span class="test-star">★★★★★</span>
+                <span class="test-label">VERIFIED USER</span>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-head">
+                <img src="https://i.pravatar.cc/96?img=33" alt="Erik Johansson" class="test-avatar">
+                <div class="test-meta">
+                    <h4>Erik Johansson</h4>
+                    <p>OWNER-OPERATOR // EJ TRANSPORT</p>
+                </div>
+            </div>
+            <p class="test-quote">"Finally a TMS that doesn't require a computer science degree. I manage my entire fleet from my phone. Customer invoices go out automatically."</p>
+            <div class="test-footer">
+                <span class="test-star">★★★★★</span>
+                <span class="test-label">VERIFIED USER</span>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-head">
+                <img src="https://i.pravatar.cc/96?img=47" alt="Maria Bergström" class="test-avatar">
+                <div class="test-meta">
+                    <h4>Maria Bergström</h4>
+                    <p>FLEET MGR // TRANSNORDIC AB</p>
+                </div>
+            </div>
+            <p class="test-quote">"Real-time visibility changed everything. Our customers track their own shipments. Support calls dropped 60%. The ROI was instant."</p>
+            <div class="test-footer">
+                <span class="test-star">★★★★★</span>
+                <span class="test-label">VERIFIED USER</span>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-head">
+                <img src="https://i.pravatar.cc/96?img=68" alt="Lars Andersson" class="test-avatar">
+                <div class="test-meta">
+                    <h4>Lars Andersson</h4>
+                    <p>DISPATCH // NORDVÄG TRANSPORT</p>
+                </div>
+            </div>
+            <p class="test-quote">"Driver app is brilliant. No more phone tag, no paper manifests. POD comes in automatically with GPS verification. Game changer for our operation."</p>
+            <div class="test-footer">
+                <span class="test-star">★★★★★</span>
+                <span class="test-label">VERIFIED USER</span>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-head">
+                <img src="https://i.pravatar.cc/96?img=8" alt="Anna Eriksson" class="test-avatar">
+                <div class="test-meta">
+                    <h4>Anna Eriksson</h4>
+                    <p>CEO // HORIZON LOGISTICS</p>
+                </div>
+            </div>
+            <p class="test-quote">"We tried three other systems. All bloated, overcomplicated messes. Motus does what it promises. Nothing more, nothing less. Perfect."</p>
+            <div class="test-footer">
+                <span class="test-star">★★★★★</span>
+                <span class="test-label">VERIFIED USER</span>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-head">
+                <img src="https://i.pravatar.cc/96?img=52" alt="Johan Nilsson" class="test-avatar">
+                <div class="test-meta">
+                    <h4>Johan Nilsson</h4>
+                    <p>CFO // SVENSKA FRAKT GROUP</p>
+                </div>
+            </div>
+            <p class="test-quote">"The reporting alone justifies the cost. Revenue per route, driver performance, fleet utilisation — all in real-time. We make better decisions faster."</p>
+            <div class="test-footer">
+                <span class="test-star">★★★★★</span>
+                <span class="test-label">VERIFIED USER</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="scan"></div>
+
+<!-- ══ CTA ══ -->
+<section class="cta" id="cta">
+    <h2 class="cta-h">See it in your operation.</h2>
+    <p class="cta-sub">30 minutes. No slides. We'll show you your actual workflow<br>running in the system.</p>
+    <button class="cta-btn">Request a demo</button>
+    <p class="cta-note">// NO COMMITMENT &nbsp;—&nbsp; NO PRE-SALES QUESTIONNAIRE &nbsp;—&nbsp; JUST THE PRODUCT</p>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <span class="footer-l">© 2026 MOTUS LOGISTIK AB</span>
+    <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+    </div>
+</footer>
+
+<!-- ══ LOGO TILT ANIMATION ══ -->
+<script>
+    const hero = document.getElementById('hero');
+    const wrap = document.getElementById('logoWrap');
+
+    let targetRX = -25, targetRY = 0;
+    let currentRX = -25, currentRY = 0;
+    let autoAngle = 0;
+    let mouseActive = false;
+    let mouseTimeout;
+
+    const BASE_TILT = -25;
+    const MAX_EXTRA = 35;
+    const AUTO_SPEED = 0.004;
+
+    hero.addEventListener('mousemove', e => {
+        mouseActive = true;
+        clearTimeout(mouseTimeout);
+        mouseTimeout = setTimeout(() => { mouseActive = false; }, 2000);
+        const rect = hero.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const nx = (e.clientX - cx) / (rect.width / 2);
+        const ny = (e.clientY - cy) / (rect.height / 2);
+        targetRY = nx * MAX_EXTRA;
+        targetRX = BASE_TILT + (-ny * MAX_EXTRA * 0.7);
+    });
+
+    function tick() {
+        if (!mouseActive) {
+            autoAngle += AUTO_SPEED;
+            targetRY = Math.sin(autoAngle) * 10;
+            targetRX = BASE_TILT + Math.cos(autoAngle * 0.7) * 5;
+        }
+        currentRX += (targetRX - currentRX) * 0.06;
+        currentRY += (targetRY - currentRY) * 0.06;
+        wrap.style.transform = `perspective(900px) rotateX(${currentRX}deg) rotateY(${currentRY}deg) scale(1.05)`;
+        requestAnimationFrame(tick);
+    }
+
+    tick();
+</script>
+
+</body>
+</html>
