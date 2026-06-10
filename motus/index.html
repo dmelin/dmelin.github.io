@@ -54,7 +54,11 @@
         .hm-l{font-size:10px;color:rgba(200,223,240,0.35);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
 
         /* ── HUD WIDGET ── */
-        .hud{background:rgba(0,200,255,0.03);border:1px solid rgba(0,200,255,0.15);padding:20px;position:relative;z-index:2;backdrop-filter:blur(10px)}
+        .hud{border:1px solid rgba(0,200,255,0.15);padding:20px;position:relative;z-index:2;border-radius:8px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
+        .hud-distortion{position:absolute;top:0;left:0;width:100%;height:100%;filter:url(#hud-glass-distortion) saturate(1.2) brightness(1.15);backdrop-filter:blur(12px);z-index:1}
+        .hud-color{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.04)),rgba(0,200,255,0.03);z-index:2}
+        .hud-highlight{position:absolute;top:0;left:0;width:100%;height:100%;box-shadow:inset 1px 1px 1px rgba(255,255,255,0.15);z-index:3}
+        .hud > *:not(.hud-distortion):not(.hud-color):not(.hud-highlight){position:relative;z-index:4}
         .hud::before{content:'SYS:LIVE';position:absolute;top:-1px;left:20px;font-size:9px;font-family:'Space Mono',monospace;color:#00c8ff;background:rgba(2,12,24,0.8);backdrop-filter:blur(10px);padding:0 8px;letter-spacing:.1em}
         .hud::after{content:'';position:absolute;top:0;right:0;width:20px;height:20px;border-top:1px solid #00c8ff;border-right:1px solid #00c8ff}
         .hud-corner-bl{position:absolute;bottom:0;left:0;width:20px;height:20px;border-bottom:1px solid rgba(0,200,255,0.4);border-left:1px solid rgba(0,200,255,0.4)}
@@ -218,6 +222,19 @@
     </div>
 
     <div class="hud">
+        <!-- SVG glass distortion filter -->
+        <svg aria-hidden="true" style="display: none;">
+            <filter id="hud-glass-distortion">
+                <feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="50" />
+            </filter>
+        </svg>
+
+        <!-- Glass effect layers -->
+        <div class="hud-distortion"></div>
+        <div class="hud-color"></div>
+        <div class="hud-highlight"></div>
+
         <div class="hud-corner-bl"></div>
         <div class="hud-row">
             <span class="hud-id">#4821</span>
@@ -508,15 +525,32 @@
     let autoAngle = 0;
     let mouseActive = false;
     let mouseTimeout;
+    let idleRotationActive = false;
+    let idleRotationTimeout;
+    let idleSwayTime = 0;
 
     const BASE_TILT = -25;
     const MAX_EXTRA = 35;
     const AUTO_SPEED = 0.004;
+    const IDLE_SWAY_SPEED = 0.003; // Speed of the sway oscillation
+    const IDLE_SWAY_RANGE = 20; // Max degrees to sway left/right
 
     hero.addEventListener('mousemove', e => {
         mouseActive = true;
+        idleRotationActive = false;
         clearTimeout(mouseTimeout);
-        mouseTimeout = setTimeout(() => { mouseActive = false; }, 2000);
+        clearTimeout(idleRotationTimeout);
+
+        // After 2s of no movement, start mouse-follow auto rotation
+        mouseTimeout = setTimeout(() => {
+            mouseActive = false;
+
+            // After 3s more (5s total), start slow idle sway
+            idleRotationTimeout = setTimeout(() => {
+                idleRotationActive = true;
+            }, 3000);
+        }, 2000);
+
         const rect = hero.getBoundingClientRect();
         const cx = rect.left + rect.width / 2;
         const cy = rect.top + rect.height / 2;
@@ -527,7 +561,13 @@
     });
 
     function tick() {
-        if (!mouseActive) {
+        if (idleRotationActive) {
+            // Slow sway back and forth between -20° and +20°
+            idleSwayTime += IDLE_SWAY_SPEED;
+            targetRY = Math.sin(idleSwayTime) * IDLE_SWAY_RANGE;
+            targetRX = BASE_TILT + Math.cos(idleSwayTime * 0.5) * 3; // Subtle X wobble
+        } else if (!mouseActive) {
+            // Normal auto rotation when mouse stops but not idle yet
             autoAngle += AUTO_SPEED;
             targetRY = Math.sin(autoAngle) * 10;
             targetRX = BASE_TILT + Math.cos(autoAngle * 0.7) * 5;

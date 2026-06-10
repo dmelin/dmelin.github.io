@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frosted Glass Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 600vh;
+            background: url('https://picsum.photos/1920/1080') repeat center/contain;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Glass panel container */
+        .glass-container {
+            position: fixed;
+            top: 95px;
+            left: 50%;
+            width: 600px;
+            height: 180px;
+            z-index: 50;
+            transform: translateX(-50%);
+            max-width: 90%;
+        }
+
+        /* Glass panel styling */
+        .glass-panel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            cursor: grabbing;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        /* Glass effect layers */
+        .glass-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+        }
+
+        /* Distortion layer with SVG filter */
+        .distortion-layer {
+            filter: url(#glass-distortion) saturate(1.2) brightness(1.15);
+            backdrop-filter: blur(12px);
+            z-index: 10;
+        }
+
+        /* Background color layer */
+        .color-layer {
+            background: rgba(0, 0, 0, 0.25);
+            z-index: 20;
+        }
+
+        /* Inner highlight layer */
+        .highlight-layer {
+            box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.15);
+            z-index: 30;
+        }
+
+        /* Content container */
+        .glass-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header styles */
+        .glass-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .glass-title {
+            font-size: 1rem;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        /* Controls styling */
+        .glass-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .control-icon::before,
+        .control-icon::after {
+            content: '';
+            position: absolute;
+            background: white;
+        }
+
+        .icon-minimize::before {
+            width: 10px;
+            height: 2px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .icon-maximize {
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .icon-close::before,
+        .icon-close::after {
+            width: 12px;
+            height: 2px;
+            top: 50%;
+            left: 50%;
+            background: rgba(255, 100, 100, 0.9);
+        }
+
+        .icon-close::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .icon-close::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        /* Preview content */
+        .content-preview {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        .content-line {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 8px;
+        }
+
+        .content-line.short {
+            width: 70%;
+        }
+
+        .content-line.medium {
+            width: 85%;
+        }
+
+        .content-line.long {
+            width: 95%;
+        }
+    </style>
+</head>
+
+<body>
+<!-- Background container -->
+<div class="background-container"></div>
+
+<!-- Glass effect container -->
+<div class="glass-container">
+    <div class="glass-panel">
+        <!-- Hidden SVG filter -->
+        <svg aria-hidden="true" style="display: none;">
+            <filter id="glass-distortion">
+                <feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="77" />
+            </filter>
+        </svg>
+
+        <!-- Glass effect layers -->
+        <div class="glass-layer distortion-layer"></div>
+        <div class="glass-layer color-layer"></div>
+        <div class="glass-layer highlight-layer"></div>
+
+        <!-- Content -->
+        <div class="glass-content">
+            <div class="glass-header">
+                <h3 class="glass-title">Live Caption</h3>
+                <div class="glass-controls">
+                    <div class="control-icon icon-minimize"></div>
+                    <div class="control-icon icon-maximize"></div>
+                    <div class="control-icon icon-close"></div>
+                </div>
+            </div>
+
+            <div class="content-preview">
+                <div class="content-line long"></div>
+                <div class="content-line short"></div>
+                <div class="content-line medium"></div>
+                <div class="content-line long"></div>
+                <div class="content-line short"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Make glass panel draggable
+    const glassPanel = document.querySelector('.glass-container');
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = -glassPanel.getBoundingClientRect().width / 2;
+    let yOffset = 0;
+
+    glassPanel.addEventListener('mousedown', dragStart);
+    glassPanel.addEventListener('mouseup', dragEnd);
+    glassPanel.addEventListener('mousemove', drag);
+    glassPanel.addEventListener('mouseleave', dragEnd);
+
+    function dragStart(e) {
+        initialX = (e.clientX || e.touches[0].clientX) - xOffset;
+        initialY = (e.clientY || e.touches[0].clientY) - yOffset;
+
+        console.log('Drag started at:', initialX, initialY);
+
+        isDragging = true;
+    }
+
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = (e.clientX || e.touches[0].clientX) - initialX;
+            currentY = (e.clientY || e.touches[0].clientY) - initialY;
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            setTranslate(currentX, currentY, glassPanel);
+        }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `matrix(1.02, 0, 0, 1.02, ${xPos}, ${yPos})`;
+    }
+
+    // Touch support for mobile devices
+    glassPanel.addEventListener('touchstart', dragStart);
+    glassPanel.addEventListener('touchend', dragEnd);
+    glassPanel.addEventListener('touchmove', drag);
+    glassPanel.addEventListener('touchcancel', dragEnd);
+    // Prevent default touch actions to avoid scrolling
+    glassPanel.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+    }, { passive: false });
+    glassPanel.addEventListener('touchstart', function (e) {
+        e.preventDefault();
+    }, { passive: false });
+    glassPanel.addEventListener('touchend', function (e) {
+        e.preventDefault();
+    }, { passive: false });
+    glassPanel.addEventListener('touchcancel', function (e) {
+        e.preventDefault();
+    }, { passive: false });
+
+</script>
+</body>
+
+</html>
