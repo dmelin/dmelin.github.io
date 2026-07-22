@@ -740,7 +740,10 @@
             if (isSolved && !this.hasWon) {
                 this.hasWon = true;
                 this.sounds.win();
-                alert('Solitaire solved!');
+                setTimeout(() => {
+                    alert('Solitaire solved!');
+                    this.newGame();
+                }, 1000);
             }
         }
 
@@ -768,7 +771,10 @@
                 !this.hasPossibleDiscard() && !this.hasPossibleMove()) {
                 this.hasLost = true;
                 this.sounds.lose();
-                alert('No more moves — game over.');
+                setTimeout(() => {
+                    alert('No more moves — game over.');
+                    this.newGame();
+                }, 1000);
             }
         }
 
