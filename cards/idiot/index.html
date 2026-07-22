@@ -458,7 +458,7 @@
 
         <div class="deck-pile discard-pile">
             <div class="deck-label">Discard</div>
-            <div class="card empty" id="discard-card">—</div>
+            <div class="pile-stack" id="discard-pile"></div>
             <div class="card-count" id="discard-count">0</div>
         </div>
     </div>
@@ -852,6 +852,20 @@
             }
 
             const card = sourcePile.pop();
+            const cardUnderneath = sourcePile[sourcePile.length - 1];
+
+            // Moving a card can reveal a higher card of the same suit in
+            // its source pile. Discard it directly instead of moving it.
+            if (cardUnderneath && cardUnderneath.suit === card.suit &&
+                cardUnderneath.getNumericValue() > card.getNumericValue()) {
+                this.discardPile.push(card);
+                this.sounds.discardCard();
+                this.render();
+                this.checkForWin();
+                this.checkForLoss();
+                return;
+            }
+
             targetPile.push(card);
 
             this.render();
@@ -888,28 +902,41 @@
             }
 
             // Update discard pile visual
-            const discardCard = document.getElementById('discard-card');
-            if (this.discardPile.length > 0) {
-                const topCard = this.discardPile[this.discardPile.length - 1];
-                discardCard.innerHTML = `
+            const discardContainer = document.getElementById('discard-pile');
+            discardContainer.innerHTML = '';
+            discardContainer.style.height = '140px';
+
+            if (this.discardPile.length === 0) {
+                const emptyCard = document.createElement('div');
+                emptyCard.className = 'card empty';
+                emptyCard.textContent = '—';
+                discardContainer.appendChild(emptyCard);
+                return;
+            }
+
+            const discardStackHeight = 140 + (this.discardPile.length - 1) * 20;
+            discardContainer.style.height = `${discardStackHeight}px`;
+
+            this.discardPile.forEach((card, cardIndex) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `card stacked ${card.suit}`;
+                cardEl.style.transform = `translateY(${cardIndex * 20}px)`;
+                cardEl.style.zIndex = cardIndex + 1;
+                cardEl.innerHTML = `
                         <div class="card-corner top-left">
-                            <div class="card-value">${topCard.getDisplayName()}</div>
-                            <div class="card-suit-name">${topCard.getSuitName()}</div>
+                            <div class="card-value">${card.getDisplayName()}</div>
+                            <div class="card-suit-name">${card.getSuitName()}</div>
                         </div>
                         <div class="card-center">
-                            <div class="card-value">${topCard.getDisplayName()}</div>
-                            <div class="card-suit ${topCard.suit}">${topCard.getSuitSymbol()}</div>
+                            <div class="card-value">${card.getDisplayName()}</div>
+                            <div class="card-suit ${card.suit}">${card.getSuitSymbol()}</div>
                         </div>
                         <div class="card-corner top-right">
-                            <div class="card-suit ${topCard.suit}">${topCard.getSuitSymbol()}</div>
+                            <div class="card-suit ${card.suit}">${card.getSuitSymbol()}</div>
                         </div>
                     `;
-                discardCard.className = `card ${topCard.suit}`;
-                discardCard.classList.remove('empty');
-            } else {
-                discardCard.textContent = '—';
-                discardCard.className = 'card empty';
-            }
+                discardContainer.appendChild(cardEl);
+            });
         }
 
         updatePilesDisplay() {
