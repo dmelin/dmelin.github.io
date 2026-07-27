@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Idiot</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=dark_mode,light_mode,playing_cards" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=commit,dark_mode,light_mode,playing_cards,redo,undo" />
     <style>
         :root {
             --bg-primary: #222;
@@ -410,6 +410,93 @@
             color: var(--text-secondary);
         }
 
+        .history-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .history-controls button {
+            padding: 6px;
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid rgba(238, 238, 238, 0.5);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .history-controls button:hover:not(:disabled) {
+            background-color: rgba(238, 238, 238, 0.1);
+        }
+
+        .history-controls button:disabled {
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        :root.light-mode .history-controls button {
+            border-color: rgba(34, 34, 34, 0.5);
+        }
+
+        .history-timeline {
+            display: flex;
+            gap: 0;
+            margin-top: 12px;
+            justify-content: center;
+            font-size: 0;
+        }
+
+        .history-step {
+            padding: 0;
+            margin: 0;
+            color: var(--text-primary);
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, text-shadow 0.2s;
+            opacity: 0.5;
+            font-size: 14px;
+            width: 16px;
+            overflow-x: hidden;
+            height: auto;
+            min-width: unset;
+            min-height: unset;
+            line-height: 1;
+            background: none;
+        }
+
+        .history-step .material-symbols-outlined {
+        }
+
+        .history-step:hover {
+            background: none;
+        }
+        .history-step:not(:disabled) {
+            opacity: 1;
+        }
+
+        .history-step:disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+        }
+
+        .history-step.active {
+            color: #09c;
+            opacity: 1;
+        }
+
+        .history-step:hover:not(:disabled):not(.active) {
+            opacity: 0.7;
+        }
+
     </style>
 </head>
 <body>
@@ -433,6 +520,34 @@
             <div class="deck-label">Deck</div>
             <div class="card empty" id="deck-card" onclick="game.dealCards()">—</div>
             <div class="card-count" id="deck-count">0</div>
+            <div class="history-controls">
+                <button id="undo-btn" onclick="game.undo()" title="Undo" disabled>
+                    <span class="material-symbols-outlined">undo</span>
+                </button>
+                <button id="redo-btn" onclick="game.redo()" title="Redo" disabled>
+                    <span class="material-symbols-outlined">redo</span>
+                </button>
+            </div>
+            <div class="history-timeline" id="history-timeline">
+                <button class="history-step" data-button-index="0">
+                    <span class="material-symbols-outlined">commit</span>
+                </button>
+                <button class="history-step" data-button-index="1">
+                    <span class="material-symbols-outlined">commit</span>
+                </button>
+                <button class="history-step" data-button-index="2">
+                    <span class="material-symbols-outlined">commit</span>
+                </button>
+                <button class="history-step" data-button-index="3">
+                    <span class="material-symbols-outlined">commit</span>
+                </button>
+                <button class="history-step" data-button-index="4">
+                    <span class="material-symbols-outlined">commit</span>
+                </button>
+                <button class="history-step" data-button-index="5">
+                    <span class="material-symbols-outlined">commit</span>
+                </button>
+            </div>
         </div>
 
         <div class="foundation-piles-wrapper">
@@ -678,24 +793,63 @@
             this.hasWon = false;
             this.hasLost = false;
             this.storageKey = 'solitaireGameState';
+            this.initialStateKey = 'solitaireInitialState';
+            this.historyKey = 'solitaireGameHistory';
+            this.historyIndexKey = 'solitaireGameHistoryIndex';
             this.deckBackUrl = `https://picsum.photos/100/140?random=${Date.now()}`;
             this.sounds = new GameSounds();
+            this.gameStateHistory = [null, null, null, null, null, null];
+            this.historyIndex = 0;
 
             if (this.loadGameState()) {
-                this.render();
+                this.updateDisplay();
+                this.updateHistoryButtonStates();
             } else {
                 this.newGame(false);
             }
         }
 
-        saveGameState() {
+        saveGameStateWithoutHistory() {
             const state = {
                 deck: this.deck.cards,
                 piles: this.piles,
                 discardPile: this.discardPile
             };
+            localStorage.setItem(this.storageKey, JSON.stringify(state));
+            localStorage.setItem(this.initialStateKey, JSON.stringify(state));
+        }
+
+        saveGameState() {
+            // Deep copy the state to avoid shared references
+            const state = {
+                deck: this.deck.cards.map(card => ({ suit: card.suit, value: card.value })),
+                piles: this.piles.map(pile => pile.map(card => ({ suit: card.suit, value: card.value }))),
+                discardPile: this.discardPile.map(card => ({ suit: card.suit, value: card.value }))
+            };
+
+            // If we're not at the current state, remove abandoned future states
+            if (this.historyIndex > 0) {
+                // Keep states from historyIndex onwards
+                const keepStates = this.gameStateHistory.slice(this.historyIndex);
+                // Pad with nulls to make array length 6
+                this.gameStateHistory = keepStates.concat(Array(6 - keepStates.length).fill(null));
+            }
+
+            // Shift all states down: state[5] = state[4], state[4] = state[3], etc.
+            for (let i = 5; i > 0; i--) {
+                this.gameStateHistory[i] = this.gameStateHistory[i - 1];
+            }
+
+            // Add new state at position 0 (newest)
+            this.gameStateHistory[0] = state;
+
+            // Always at the newest state after making a move
+            this.historyIndex = 0;
 
             localStorage.setItem(this.storageKey, JSON.stringify(state));
+            localStorage.setItem(this.historyKey, JSON.stringify(this.gameStateHistory));
+            localStorage.setItem(this.historyIndexKey, this.historyIndex);
+            this.updateHistoryButtonStates();
         }
 
         loadGameState() {
@@ -716,6 +870,40 @@
                 this.deck.cards = restoreCards(state.deck);
                 this.piles = state.piles.map(restoreCards);
                 this.discardPile = restoreCards(state.discardPile);
+
+                // Load game state history
+                const savedHistory = localStorage.getItem(this.historyKey);
+                this.gameStateHistory = [null, null, null, null, null, null];
+                if (savedHistory) {
+                    try {
+                        const history = JSON.parse(savedHistory);
+                        if (Array.isArray(history) && history.length <= 6) {
+                            for (let i = 0; i < history.length; i++) {
+                                if (history[i] !== null) {
+                                    this.gameStateHistory[i] = history[i];
+                                }
+                            }
+                        }
+                    } catch {
+                        // Keep default empty history
+                    }
+                }
+
+                // Load history index
+                const savedIndex = localStorage.getItem(this.historyIndexKey);
+                if (savedIndex !== null) {
+                    this.historyIndex = parseInt(savedIndex, 10);
+                } else {
+                    // Find the most recent state
+                    this.historyIndex = -1;
+                    for (let i = 0; i < 6; i++) {
+                        if (this.gameStateHistory[i] !== null) {
+                            this.historyIndex = i;
+                            break;
+                        }
+                    }
+                }
+
                 return true;
             } catch {
                 return false;
@@ -729,7 +917,26 @@
             this.discardPile = [];
             this.hasWon = false;
             this.hasLost = false;
-            this.render();
+            this.gameStateHistory = [null, null, null, null, null, null];
+            this.historyIndex = 0;
+            localStorage.removeItem(this.historyKey);
+            localStorage.removeItem(this.historyIndexKey);
+            localStorage.removeItem(this.initialStateKey);
+            this.updateDisplay();
+
+            // Save initial state to history and localStorage (deep copy)
+            const initialState = {
+                deck: this.deck.cards.map(card => ({ suit: card.suit, value: card.value })),
+                piles: this.piles.map(pile => pile.map(card => ({ suit: card.suit, value: card.value }))),
+                discardPile: this.discardPile.map(card => ({ suit: card.suit, value: card.value }))
+            };
+            this.gameStateHistory[0] = initialState;
+            localStorage.setItem(this.storageKey, JSON.stringify(initialState));
+            localStorage.setItem(this.initialStateKey, JSON.stringify(initialState));
+            localStorage.setItem(this.historyKey, JSON.stringify(this.gameStateHistory));
+            localStorage.setItem(this.historyIndexKey, this.historyIndex);
+
+            this.updateHistoryButtonStates();
             if (playSound) this.sounds.shuffle();
         }
 
@@ -881,9 +1088,13 @@
         }
 
         render() {
+            this.updateDisplay();
+            this.saveGameState();
+        }
+
+        updateDisplay() {
             this.updateDeckDisplay();
             this.updatePilesDisplay();
-            this.saveGameState();
         }
 
         updateDeckDisplay() {
@@ -1016,6 +1227,107 @@
                     }
                 }
             }
+        }
+
+        jumpToStep(stepsBack) {
+            if (stepsBack === -1) {
+                this.historyIndex = -1;
+                this.restoreInitialState();
+            } else if (stepsBack >= 0 && stepsBack <= 5 && this.gameStateHistory[stepsBack] !== null) {
+                this.historyIndex = stepsBack;
+                this.restoreStateFromHistory(stepsBack);
+            }
+        }
+
+        undo() {
+            if (this.historyIndex < 5 && this.gameStateHistory[this.historyIndex + 1] !== null) {
+                this.historyIndex++;
+                this.restoreStateFromHistory(this.historyIndex);
+            }
+        }
+
+        redo() {
+            if (this.historyIndex > 0) {
+                this.historyIndex--;
+                this.restoreStateFromHistory(this.historyIndex);
+            }
+        }
+
+        restoreInitialState() {
+            const savedState = localStorage.getItem(this.initialStateKey);
+            if (!savedState) return;
+
+            try {
+                const state = JSON.parse(savedState);
+                const restoreCards = (cards) => cards.map(({ suit, value }) => new Card(suit, value));
+                this.deck.cards = restoreCards(state.deck);
+                this.piles = state.piles.map(restoreCards);
+                this.discardPile = restoreCards(state.discardPile);
+
+                localStorage.setItem(this.storageKey, JSON.stringify(state));
+                localStorage.setItem(this.historyIndexKey, this.historyIndex);
+                this.updateDisplay();
+                this.updateHistoryButtonStates();
+            } catch {
+            }
+        }
+
+        restoreStateFromHistory(index) {
+            const state = this.gameStateHistory[index];
+            if (!state) return;
+
+            const restoreCards = (cards) => cards.map(({ suit, value }) => new Card(suit, value));
+            this.deck.cards = restoreCards(state.deck);
+            this.piles = state.piles.map(restoreCards);
+            this.discardPile = restoreCards(state.discardPile);
+
+            localStorage.setItem(this.storageKey, JSON.stringify(state));
+            localStorage.setItem(this.historyIndexKey, this.historyIndex);
+
+            this.updateDisplay();
+            this.updateHistoryButtonStates();
+        }
+
+        updateHistoryButtonStates() {
+            const undoBtn = document.getElementById('undo-btn');
+            const redoBtn = document.getElementById('redo-btn');
+
+            if (undoBtn) {
+                // UNDO disabled if at oldest state or no older state exists
+                undoBtn.disabled = this.historyIndex >= 5 || this.gameStateHistory[this.historyIndex + 1] === null;
+            }
+            if (redoBtn) {
+                // REDO disabled if at newest state
+                redoBtn.disabled = this.historyIndex <= 0;
+            }
+
+            this.updateHistoryTimeline();
+        }
+
+        updateHistoryTimeline() {
+            const steps = document.querySelectorAll('.history-step');
+
+            steps.forEach((step, buttonIndex) => {
+                // Button 0 (left) = gameStateHistory[5], Button 5 (right) = gameStateHistory[0]
+                const historyIndex = 5 - buttonIndex;
+                const hasState = this.gameStateHistory[historyIndex] !== null;
+
+                step.disabled = !hasState;
+
+                if (hasState) {
+                    step.onclick = () => this.jumpToStep(historyIndex);
+                    step.title = `${historyIndex === 0 ? 'Current' : historyIndex + ' step(s) back'}`;
+                } else {
+                    step.onclick = null;
+                }
+
+                // Highlight the button showing the current state
+                if (hasState && historyIndex === this.historyIndex) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
         }
 
     }
