@@ -474,20 +474,19 @@
         }
 
         .history-state .material-symbols-outlined {
-            background-color: #09c;
             margin: -1px;
         }
 
         .history-state:hover {
             background: none;
         }
-        .history-state:not(:disabled) {
+        .history-state:not(.disabled) {
             opacity: 1;
         }
 
-        .history-state:disabled {
-            cursor: not-allowed;
+        .history-state.disabled {
             opacity: 0.3;
+            cursor: default;
         }
 
         .history-state.active {
@@ -495,7 +494,7 @@
             opacity: 1;
         }
 
-        .history-state:hover:not(:disabled):not(.active) {
+        .history-state:hover:not(.disabled):not(.active) {
             opacity: 0.7;
         }
 
@@ -531,24 +530,24 @@
                 </button>
             </div>
             <div class="history-timeline" id="history-timeline">
-                <button class="history-state" data-button-index="0">
+                <div class="history-state" data-button-index="0">
                     <span class="material-symbols-outlined">commit</span>
-                </button>
-                <button class="history-state" data-button-index="1">
+                </div>
+                <div class="history-state" data-button-index="1">
                     <span class="material-symbols-outlined">commit</span>
-                </button>
-                <button class="history-state" data-button-index="2">
+                </div>
+                <div class="history-state" data-button-index="2">
                     <span class="material-symbols-outlined">commit</span>
-                </button>
-                <button class="history-state" data-button-index="3">
+                </div>
+                <div class="history-state" data-button-index="3">
                     <span class="material-symbols-outlined">commit</span>
-                </button>
-                <button class="history-state" data-button-index="4">
+                </div>
+                <div class="history-state" data-button-index="4">
                     <span class="material-symbols-outlined">commit</span>
-                </button>
-                <button class="history-state" data-button-index="5">
+                </div>
+                <div class="history-state" data-button-index="5">
                     <span class="material-symbols-outlined">commit</span>
-                </button>
+                </div>
             </div>
         </div>
 
@@ -1314,12 +1313,12 @@
                 const historyIndex = 5 - buttonIndex;
                 const hasState = this.gameStateHistory[historyIndex] !== null;
 
-                step.disabled = !hasState;
-
                 if (hasState) {
+                    step.classList.remove('disabled');
                     step.onclick = () => this.jumpToStep(historyIndex);
                     step.title = `${historyIndex === 0 ? 'Current' : historyIndex + ' step(s) back'}`;
                 } else {
+                    step.classList.add('disabled');
                     step.onclick = null;
                 }
 
